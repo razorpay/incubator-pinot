@@ -60,6 +60,7 @@ import org.apache.pinot.thirdeye.dashboard.resources.v2.RootCauseMetricResource;
 import org.apache.pinot.thirdeye.dashboard.resources.v2.RootCauseResource;
 import org.apache.pinot.thirdeye.dashboard.resources.v2.RootCauseSessionResource;
 import org.apache.pinot.thirdeye.api.user.dashboard.UserDashboardResource;
+import org.apache.pinot.thirdeye.dashboard.resources.v2.anomalies.AnomalySearchResource;
 import org.apache.pinot.thirdeye.dashboard.resources.v2.rootcause.DefaultEntityFormatter;
 import org.apache.pinot.thirdeye.dashboard.resources.v2.rootcause.FormatterLoader;
 import org.apache.pinot.thirdeye.dataset.DatasetAutoOnboardResource;
@@ -190,6 +191,7 @@ public class ThirdEyeDashboardApplication
     env.jersey().register(new SqlDataSourceResource());
     env.jersey().register(new AlertResource());
     env.jersey().register(new RootCauseTemplateResource());
+    env.jersey().register(new AnomalySearchResource());
 
     TimeSeriesLoader timeSeriesLoader = new DefaultTimeSeriesLoader(
         DAO_REGISTRY.getMetricConfigDAO(), DAO_REGISTRY.getDatasetConfigDAO(),

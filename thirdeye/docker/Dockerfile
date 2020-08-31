@@ -2,9 +2,8 @@ FROM centos:7
 
 ARG PINOT_BRANCH=rzp
 ARG MAVEN_VERSION=3.6.3
-ARG SHA=d941423d115cd021514bfd06c453658b1b3e39e6240969caf4315ab7119a77299713f14b620fb2571a264f8dff2473d8af3cb47b05acf0036fc2553199a5c1ee
 ARG BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
-ARG PINOT_GIT_URL="https://github.com/utk-spartan/incubator-pinot.git"
+ARG PINOT_GIT_URL="https://github.com/razorpay/incubator-pinot.git"
 ENV TE_HOME=/opt/thirdeye
 ENV TE_BUILD_DIR=/opt/thirdeye-build
 
@@ -31,8 +30,10 @@ RUN echo '{ "allow_root": true }' > /root/.bowerrc \
     && npm install -g phantomjs --unsafe-perm --ignore-scripts
 
 RUN git clone ${PINOT_GIT_URL} ${TE_BUILD_DIR} --single-branch --branch ${PINOT_BRANCH} --depth=1 \
+    && cd ${TE_BUILD_DIR} \
+    && mvn clean install -DskipTests -pl pinot-common,pinot-core,pinot-spi,pinot-clients -am -Pbuild-shaded-jar \
     && cd ${TE_BUILD_DIR}/thirdeye \
-    && mvn clean install -X -DskipTests || exit 1 \
+    && mvn install -X -DskipTests \
     && mkdir -p ${TE_HOME}/config \
     && mkdir -p ${TE_HOME}/bin \
     && cp -rp ${TE_BUILD_DIR}/thirdeye/thirdeye-pinot/config/* ${TE_HOME}/config/. \
@@ -43,6 +44,12 @@ RUN git clone ${PINOT_GIT_URL} ${TE_BUILD_DIR} --single-branch --branch ${PINOT_
 VOLUME ["${TE_HOME}/config"]
 EXPOSE 1426 1427
 WORKDIR ${TE_HOME}
+
+COPY qubole_ca.cer /thirdeye/qubole_presto/ca.cer
+RUN keytool -noprompt -import -alias QuboleCA \
+    -file /thirdeye/qubole_presto/ca.cer \
+    -keystore /usr/lib/jvm/bellsoft-java8.x86_64/jre/lib/security/cacerts \
+    -storepass changeit
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

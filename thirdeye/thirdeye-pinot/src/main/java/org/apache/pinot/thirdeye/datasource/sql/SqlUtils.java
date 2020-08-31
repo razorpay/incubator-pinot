@@ -598,14 +598,22 @@ public class SqlUtils {
    * Convert java SimpleDateFormat to PostgreSQL's format
    *
    * @param timeFormat
-   * @return MySQL's time format
+   * @return Postgres's time format
    */
   private static String timeFormatToPostgreSQLFormat(String timeFormat) {
     if (timeFormat.contains("mm")) {
-      return timeFormat.replaceAll("(?i):mm", ":mi");
-    } else {
-      return timeFormat;
+      timeFormat = timeFormat.replaceAll("(?i):mm", ":mi");
     }
+
+    if (timeFormat == "yyyy-MM-dd hh:mm:ss") {
+      timeFormat = "yyyy-MM-dd HH:mm:ss";
+    }
+
+    // in postgres HH is 12 hour format and in Java it's 24 hour format, convert it
+    if (timeFormat.contains("HH")) {
+      timeFormat = timeFormat.replaceAll("HH", "HH24");
+    }
+    return timeFormat;
   }
 
   /**

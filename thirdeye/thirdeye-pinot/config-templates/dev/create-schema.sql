@@ -1,6 +1,12 @@
 -- create alias if not exists TO_UNIXTIME as $$ long unix_timestamp(java.sql.Timestamp timestamp) { return
 -- (long) (timestamp.getTime() / 1000L); } $$;
 
+create database if not exists thirdeye;
+grant all privileges on thirdeye.* to 'thirdeye'@'%';
+flush privileges;
+
+use thirdeye;
+
 create table if not exists generic_json_entity (
     id bigint(20) primary key auto_increment,
     json_val text,
@@ -269,8 +275,8 @@ create index classification_config_name_index on classification_config_index(nam
 create index classification_config_base_id_idx ON classification_config_index(base_id);
 
 create table if not exists entity_to_entity_mapping_index (
-    from_urn varchar(256) not null,
-    to_urn varchar(256) not null,
+    from_urn varchar(500) not null,
+    to_urn varchar(500) not null,
     mapping_type varchar(500) not null,
     base_id bigint(20) not null,
     create_time timestamp,

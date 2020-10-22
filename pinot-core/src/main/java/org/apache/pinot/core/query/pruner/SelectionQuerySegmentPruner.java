@@ -81,6 +81,11 @@ public class SelectionQuerySegmentPruner implements SegmentPruner {
       return segmentDataManagers;
     }
 
+    // Skip pruning segments for upsert table because valid doc index is equivalent to a filter
+    if (segmentDataManagers.get(0).getSegment().getValidDocIndex() != null) {
+      return segmentDataManagers;
+    }
+
     if (queryContext.getOrderByExpressions() == null) {
       return pruneSelectionOnly(tableDataManager, segmentDataManagers, queryContext);
     } else {

@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.pinot.common.tier.TierFactory;
 import org.apache.pinot.common.utils.CommonConstants;
 import org.apache.pinot.common.utils.config.TagNameUtils;
@@ -36,15 +37,17 @@ import org.apache.pinot.core.startree.v2.AggregationFunctionColumnPair;
 import org.apache.pinot.spi.config.table.FieldConfig;
 import org.apache.pinot.spi.config.table.IndexingConfig;
 import org.apache.pinot.spi.config.table.IngestionConfig;
+import org.apache.pinot.spi.config.table.RoutingConfig;
 import org.apache.pinot.spi.config.table.SegmentsValidationAndRetentionConfig;
 import org.apache.pinot.spi.config.table.StarTreeIndexConfig;
 import org.apache.pinot.spi.config.table.TableConfig;
 import org.apache.pinot.spi.config.table.TableType;
-import org.apache.pinot.spi.config.table.TenantConfig;
 import org.apache.pinot.spi.config.table.TierConfig;
+import org.apache.pinot.spi.config.table.UpsertConfig;
 import org.apache.pinot.spi.config.table.ingestion.FilterConfig;
 import org.apache.pinot.spi.config.table.ingestion.TransformConfig;
 import org.apache.pinot.spi.data.Schema;
+import org.apache.pinot.spi.stream.StreamConfig;
 import org.apache.pinot.spi.utils.TimeUtils;
 
 
@@ -77,6 +80,7 @@ public final class TableConfigUtils {
     validateTierConfigList(tableConfig.getTierConfigsList());
     validateIndexingConfig(tableConfig.getIndexingConfig(), schema);
     validateFieldConfigList(tableConfig.getFieldConfigList(), schema);
+    validateUpsertConfig(tableConfig, schema);
   }
 
   /**
@@ -232,6 +236,42 @@ public final class TableConfigUtils {
   }
 
   /**
+   * Validates the upsert-related configurations
+   *  - check table type is realtime
+   *  - the primary key exists on the schema
+   *  - replica group is configured for routing type
+   *  - consumer type must be low-level
+   */
+  protected static void validateUpsertConfig(TableConfig tableConfig, Schema schema) {
+    if (tableConfig.getUpsertMode() == UpsertConfig.Mode.NONE) {
+      return;
+    }
+    // check table type is realtime
+    Preconditions
+        .checkState(tableConfig.getTableType() == TableType.REALTIME, "Upsert table is for realtime table only.");
+    // primary key exists
+    Preconditions.checkState(CollectionUtils.isNotEmpty(schema.getPrimaryKeyColumns()),
+        "Upsert table must have primary key columns in the schema");
+    // consumer type must be low-level
+    Preconditions.checkState(
+        tableConfig.getIndexingConfig() != null && tableConfig.getIndexingConfig().getStreamConfigs() != null,
+        "streamConfig must exist in the table config");
+    StreamConfig streamConfig =
+        new StreamConfig(tableConfig.getTableName(), tableConfig.getIndexingConfig().getStreamConfigs());
+    Preconditions.checkState(streamConfig.hasLowLevelConsumerType() && !streamConfig.hasHighLevelConsumerType(),
+        "Upsert table must use low-level streaming consumer type");
+    // replica group is configured for routing
+    Preconditions.checkState(
+        tableConfig.getRoutingConfig() != null && RoutingConfig.REPLICA_GROUP_INSTANCE_SELECTOR_TYPE
+            .equalsIgnoreCase(tableConfig.getRoutingConfig().getInstanceSelectorType()),
+        "Upsert table must use replica-group (i.e. replicaGroup) based routing");
+    // no startree index
+    Preconditions.checkState(
+        CollectionUtils.isEmpty(tableConfig.getIndexingConfig().getStarTreeIndexConfigs()) && !tableConfig
+            .getIndexingConfig().isEnableDefaultStarTree(), "The upsert table cannot have star-tree index.");
+  }
+
+  /**
    * Validates the tier configs
    * Checks for the right segmentSelectorType and its required properties
    * Checks for the right storageType and its required properties
@@ -294,14 +334,19 @@ public final class TableConfigUtils {
         noDictionaryColumnsSet.add(columnName);
       }
     }
+    Set<String> bloomFilterColumns = new HashSet<>();
     if (indexingConfig.getBloomFilterColumns() != null) {
-      for (String columnName : indexingConfig.getBloomFilterColumns()) {
-        if (noDictionaryColumnsSet.contains(columnName)) {
-          throw new IllegalStateException(
-              "Cannot create a Bloom Filter on column " + columnName + " specified in the noDictionaryColumns config");
-        }
-        columnNameToConfigMap.put(columnName, "Bloom Filter Config");
+      bloomFilterColumns.addAll(indexingConfig.getBloomFilterColumns());
+    }
+    if (indexingConfig.getBloomFilterConfigs() != null) {
+      bloomFilterColumns.addAll(indexingConfig.getBloomFilterConfigs().keySet());
+    }
+    for (String bloomFilterColumn : bloomFilterColumns) {
+      if (noDictionaryColumnsSet.contains(bloomFilterColumn)) {
+        throw new IllegalStateException("Cannot create a Bloom Filter on column " + bloomFilterColumn
+            + " specified in the noDictionaryColumns config");
       }
+      columnNameToConfigMap.put(bloomFilterColumn, "Bloom Filter Config");
     }
     if (indexingConfig.getInvertedIndexColumns() != null) {
       for (String columnName : indexingConfig.getInvertedIndexColumns()) {

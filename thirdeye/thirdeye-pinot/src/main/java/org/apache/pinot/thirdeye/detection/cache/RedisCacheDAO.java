@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.pinot.thirdeye.anomaly.utils.ThirdeyeMetricsUtil;
 import org.apache.pinot.thirdeye.detection.ConfigUtils;
 import org.redisson.Redisson;
@@ -78,7 +79,7 @@ public class RedisCacheDAO implements CacheDAO {
 	private boolean redisState;
 
 	// Eg: KEY = metricId:2:dimensionKey:3158902058
-	private static final String KEY_PREFIX = "metricId:";
+	private static final String KEY_PREFIX = "thirdeyeMetricId:";
 
 	public RedisCacheDAO() {
 		this.createDataStoreConnection();
@@ -103,17 +104,15 @@ public class RedisCacheDAO implements CacheDAO {
 		}
 		redissonConfig.useSingleServer().setAddress(host);
 
-		// If no username specified, default username ("") will be considered
-//		String username = (StringUtils.isNotEmpty((String) dataSourceconfig.get(AUTH_USERNAME)))
-//				? (String) dataSourceconfig.get(AUTH_USERNAME)
-//				: DEFAULT_USERNAME;
-//		redissonConfig.useSingleServer().setUsername(username);
-//
-//		// If no password specified, default password ("") will be considered
-//		String password = (StringUtils.isNotEmpty((String) dataSourceconfig.get(AUTH_PASSWORD)))
-//				? (String) dataSourceconfig.get(AUTH_PASSWORD)
-//				: DEFAULT_PASSWORD;
-//		redissonConfig.useSingleServer().setPassword(password);
+		String username = (StringUtils.isNotEmpty((String) dataSourceconfig.get(AUTH_USERNAME)))
+				? (String) dataSourceconfig.get(AUTH_USERNAME)
+				: DEFAULT_AUTH_USERNAME;
+		redissonConfig.useSingleServer().setUsername(username);
+
+		String password = (StringUtils.isNotEmpty((String) dataSourceconfig.get(AUTH_PASSWORD)))
+				? (String) dataSourceconfig.get(AUTH_PASSWORD)
+				: DEFAULT_AUTH_PASSWORD;
+		redissonConfig.useSingleServer().setPassword(password);
 
 		int idleConnectionTimeout = ((Integer) dataSourceconfig.get(IDLE_CONNECTION_TIMEOUT) == null)
 				? DEFAULT_IDLE_CONNECTION_TIMEOUT
@@ -168,8 +167,13 @@ public class RedisCacheDAO implements CacheDAO {
 	public ThirdEyeCacheResponse tryFetchExistingTimeSeries(ThirdEyeCacheRequest request) throws Exception {
 		long metricId = request.getMetricId();
 		String dimensionKey = request.getDimensionKey();
+
+		// filter1: cached values are queried on combination of metricId, dimensionKey
+		// Eg:metricId:2:dimensionKey:3158902058
 		String keyVal = createKey(metricId, dimensionKey);
+
 		RTimeSeries<Map<String, Object>> ts = getRedissonClient().getTimeSeries(keyVal);
+
 		ThirdeyeMetricsUtil.redisCallCounter.inc();
 		if (ts.size() == 0) {
 			LOG.info("no redis cache found for window startTime = {} to endTime = {}", request.getStartTimeInclusive(),
@@ -179,11 +183,15 @@ public class RedisCacheDAO implements CacheDAO {
 		}
 
 		long start = request.getStartTimeInclusive();
+		// NOTE: we subtract 1 granularity from the end date because reddison
+		// RTimeSeries's range is inclusive on both sides
 		long end = request.getEndTimeExclusive() - request.getRequest().getGroupByTimeGranularity().toMillis();
 
+		LOG.info("reading redis cache for window startTime = {} to endTime = {}", start, end);
+
+		// filter2: cached values are queried on start and end timestamp
 		Collection<Map<String, Object>> cacheValues = ts.range(start, end);
-		LOG.info("reading redis cache for window startTime = {} to endTime = {}", request.getStartTimeInclusive(),
-				request.getEndTimeExclusive());
+
 		List<TimeSeriesDataPoint> timeSeriesRows = new ArrayList<>();
 		for (Map<String, Object> cacheValue : cacheValues) {
 			long timestamp = (long) cacheValue.get(CacheConstants.TIMESTAMP);
@@ -218,6 +226,8 @@ public class RedisCacheDAO implements CacheDAO {
 			int ttl = CacheConfig.getInstance().getCentralizedCacheSettings().getTTL();
 			// ts is the key in the redis store. Eg: metricId:2:dimensionKey:3158902058
 			RTimeSeries<Map<String, Object>> ts = getRedissonClient().getTimeSeries(keyVal);
+			// in ts, all the timestamps associated with the key will be stored as a
+			// timeseries data along with metric information.
 			Map<String, Object> cacheValue = ts.get(timestamp);
 			if (MapUtils.isEmpty(cacheValue)) {
 				Map<String, Object> values = new HashMap<String, Object>();

@@ -239,6 +239,13 @@
       <version>2.7.9</version>
     </dependency>
 
+    <!-- Redis client dependencies -->
+    <dependency>
+      <groupId>org.redisson</groupId>
+      <artifactId>redisson</artifactId>
+      <version>3.13.6</version>
+    </dependency>
+
     <!-- demo dependencies -->
     <dependency>
       <groupId>com.h2database</groupId>

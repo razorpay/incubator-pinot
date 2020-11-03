@@ -16,26 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.pinot.broker.routing.segmentselector;
 
-import java.util.Set;
+import * as React from 'react';
 
-
-/**
- * The segment pre-selector filters the unnecessary online segments for the query.
- * <p>Segment pre-selector examples:
- * <ul>
- *   <li>
- *     For table with segment merge/rollup enabled, select the merged segments over the original segments with the same
- *     data
- *   </li>
- * </ul>
- */
-public interface SegmentPreSelector {
-
-  /**
-   * Process pre-selection for online segments to filter out unnecessary online segments. It is safe to modify the input
-   * online segments.
-   */
-  Set<String> preSelect(Set<String> onlineSegments);
+export interface NotificationContextInterface {
+  type: string,
+  message: string,
+  show: boolean,
+  hide: Function,
+  dispatch: React.Dispatch<any>;
 }
+
+export const NotificationContext = React.createContext<NotificationContextInterface>(null);

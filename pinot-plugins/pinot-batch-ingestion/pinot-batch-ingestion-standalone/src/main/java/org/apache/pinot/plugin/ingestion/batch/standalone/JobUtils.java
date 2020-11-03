@@ -16,20 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.pinot.broker.routing.segmentselector;
+package org.apache.pinot.plugin.ingestion.batch.standalone;
 
-import org.apache.helix.ZNRecord;
-import org.apache.helix.store.zk.ZkHelixPropertyStore;
-import org.apache.pinot.spi.config.table.TableConfig;
+public class JobUtils {
 
-
-public class SegmentPreSelectorFactory {
-  private SegmentPreSelectorFactory() {
-  }
-
-  public static SegmentPreSelector getSegmentPreSelector(TableConfig tableConfig,
-      ZkHelixPropertyStore<ZNRecord> propertyStore) {
-    String tableNameWithType = tableConfig.getTableName();
-    return new SegmentLineageBasedSegmentPreSelector(tableNameWithType, propertyStore);
+  public static int getNumThreads(int jobParallelism) {
+    int numCores = Math.max(Runtime.getRuntime().availableProcessors(), 1);
+    if (jobParallelism > 0) {
+      return Math.min(numCores, jobParallelism);
+    }
+    return 1;
   }
 }

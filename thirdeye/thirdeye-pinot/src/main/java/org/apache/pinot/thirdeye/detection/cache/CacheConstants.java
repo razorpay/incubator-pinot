@@ -38,5 +38,8 @@ public class CacheConstants {
 
   // refers to hashed metricURN which is used as the key to data for a dimension combination.
   public static final String DIMENSION_KEY = "dimensionKey";
+  
+  // for redis storage
+  public static final String DIMENSION_KEY_VALUE = "dimensionKeyValue";
 
 }

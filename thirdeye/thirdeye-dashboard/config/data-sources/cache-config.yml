@@ -31,4 +31,18 @@ centralizedCacheSettings:
         trustStoreFilePath: 'trust/store/path/truststore_file' # e.g. '/etc/riddler/cacerts'
         trustStorePassword: ''
     # add your store of choice here
-
+    redis:
+      className: org.apache.pinot.thirdeye.detection.cache.RedisCacheDAO
+      config:
+        hosts:
+          - 'redis://127.0.0.1:6379'
+        authUsername: ''
+        authPassword: ''
+        idleConnectionTimeout: 10000
+        connectTimeout: 10000
+        timeout: 3000
+        retryAttempts: 3
+        retryInterval: 1500
+        pingConnectionInterval: 30000
+        keepAlive: false
+        tcpNoDelay: false

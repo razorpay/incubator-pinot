@@ -55,11 +55,11 @@ public class ThirdEyeSlackClient {
 	public String createMessage(SlackEntity slackEntity) {
 		String webhookUrl = slackEntity.getUrl();
 		List<LayoutBlock> message = new ArrayList<>();
-		message.add(HeaderBlock.builder().text(plainText("New Anamoly Alert")).build());
+		message.add(HeaderBlock.builder().text(plainText("New Anomaly Alert")).build());
 		message.add(DividerBlock.builder().build());
 
-		message.add(SectionBlock.builder().text(MarkdownTextObject.builder().text(slackEntity.getSummary()).build())
-				.build());
+//		message.add(SectionBlock.builder().text(MarkdownTextObject.builder().text(slackEntity.getSummary()).build())
+//				.build());
 		message.add(SectionBlock.builder().text(MarkdownTextObject.builder().text(slackEntity.getDescription()).build())
 				.build());
 		WebhookResponse response = null;

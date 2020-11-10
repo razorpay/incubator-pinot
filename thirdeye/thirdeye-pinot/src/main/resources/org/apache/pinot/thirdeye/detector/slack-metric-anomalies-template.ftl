@@ -13,32 +13,25 @@
   </#if>
 </#list>
 
-<#if newTable>
-  <#if anomalyCount > 1>
-  Metric: _${metric}_
-  </#if>
-  Detection Name: <${dashboardHost}/app/#/manage/explore/${functionToId[detectionName]?string.computer}| _${detectionName}_ >
-  <#if description?has_content>
-  Description: _${description}_
-  </#if>
-</#if>
-
 <#list detectionToAnomalyDetailsMap[detectionName] as anomaly>
 <#if anomaly.metric==metric>
 <#if newTable>
-  ${anomaly.anomalyType} for ${anomaly.duration} at start time: *${anomaly.startDateTime}* ${anomaly.timezone}
+  *Metric:* _${metric}_
+  *Detection Name:* <${dashboardHost}/app/#/manage/explore/${functionToId[detectionName]?string.computer}| _${detectionName}_ >
+  <#if description?has_content>
+  *Description:* _${description}_ 
+  </#if>
+  <#rt>${'\n'}>Type: <${anomaly.anomalyURL}${anomaly.anomalyId}|${anomaly.anomalyType}>
+  <#rt>${'\n'}>Duration: ${anomaly.duration}
+  <#rt>${'\n'}>Start: *${anomaly.startDateTime}* ${anomaly.timezone}
   <#if anomaly.dimensions?has_content>
   <#list anomaly.dimensions as dimension> 
-    dimension: ${dimension}
+  <#rt>${'\n'}>Dimension: ${dimension}
   </#list>
   </#if>
-  Current: ${anomaly.currentVal}
-  <#if anomaly.baselineVal == "+">
-  Predicted: _Higher_
-  <#else>
-  Predicted: _Lower_
-  </#if>
-  <${anomaly.anomalyURL}${anomaly.anomalyId}|More details...>
+  <#rt>${'\n'}>Current: ${anomaly.currentVal}
+  <#if anomaly.baselineVal == "+"><#rt>${'\n'}>Predicted: _Higher_ <#else><#rt>${'\n'}>Predicted: _Lower_ </#if>
+  <#--  <${anomaly.anomalyURL}${anomaly.anomalyId}|Link>  -->
 </#if>
 <#assign newTable = false>
 </#if>

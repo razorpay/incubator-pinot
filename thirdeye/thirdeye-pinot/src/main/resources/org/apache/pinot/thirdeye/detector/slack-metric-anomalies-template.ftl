@@ -33,7 +33,6 @@
   <#if anomaly.baselineVal == "+"><#rt>${'\n'}>Predicted: _Higher_ <#else><#rt>${'\n'}>Predicted: _Lower_ </#if>
   <#--  <${anomaly.anomalyURL}${anomaly.anomalyId}|Link>  -->
 </#if>
-<#assign newTable = false>
 </#if>
 </#list>
 </#list>

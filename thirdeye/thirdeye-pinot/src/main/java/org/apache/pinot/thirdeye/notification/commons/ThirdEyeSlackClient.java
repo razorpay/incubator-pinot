@@ -57,14 +57,12 @@ public class ThirdEyeSlackClient {
 		List<LayoutBlock> message = new ArrayList<>();
 		message.add(HeaderBlock.builder().text(plainText("New Anomaly Alert")).build());
 		message.add(DividerBlock.builder().build());
-
-//		message.add(SectionBlock.builder().text(MarkdownTextObject.builder().text(slackEntity.getSummary()).build())
-//				.build());
 		message.add(SectionBlock.builder().text(MarkdownTextObject.builder().text(slackEntity.getDescription()).build())
 				.build());
 		WebhookResponse response = null;
 		try {
-			response = slack.send(webhookUrl, payload(p -> p.blocks(message)));
+			// p.text("Anomaly Alert") is for mobile lock screen notification 
+			response = slack.send(webhookUrl, payload(p -> p.text("Anomaly Alert").blocks(message)));
 		} catch (IOException e) {
 			LOG.error(Arrays.toString(e.getStackTrace()));
 		}

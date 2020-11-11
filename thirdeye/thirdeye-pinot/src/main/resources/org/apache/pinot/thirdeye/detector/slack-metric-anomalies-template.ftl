@@ -25,6 +25,6 @@
 </#list>
 </#list>
 </#list>
-<#if alertConfigName?has_content>
+<#--  <#if alertConfigName?has_content>
 :memo: ThirdEye Alert Service for *${alertConfigName}*.
-</#if>
+</#if>  -->

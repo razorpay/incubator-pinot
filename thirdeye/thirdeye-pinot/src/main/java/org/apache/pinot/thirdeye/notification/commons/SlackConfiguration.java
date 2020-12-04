@@ -29,8 +29,12 @@ public class SlackConfiguration {
 
 	public static final String SLACK_CONF = "slackConfiguration";
 	public static final String SLACK_URL = "webhookUrl";
+	public static final String DEFAULT_CHANNEL = "defaultChannel";
+	public static final String SLACK_TOKEN = "slackToken";
 
 	private String url;
+	private String defaultChannel;
+	private String slackToken;
 
 	public String getUrl() {
 		return url;
@@ -38,6 +42,22 @@ public class SlackConfiguration {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public String getDefaultChannel() {
+		return defaultChannel;
+	}
+
+	public void setDefaultChannel(String defaultChannel) {
+		this.defaultChannel = defaultChannel;
+	}
+
+	public String getSlackToken() {
+		return slackToken;
+	}
+
+	public void setSlackToken(String slackToken) {
+		this.slackToken = slackToken;
 	}
 
 	@Override

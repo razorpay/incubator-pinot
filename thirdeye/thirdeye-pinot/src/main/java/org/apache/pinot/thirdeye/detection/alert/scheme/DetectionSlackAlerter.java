@@ -47,7 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is responsible for creating the slack alert tickets
+ * This class is responsible for creating the slack alerts
  *
  * detector.yml alertSchemes: - type: SLACK params: webhookUrl:
  * https://hooks.slack.com/services/XYZ/LMNOP/ABCD

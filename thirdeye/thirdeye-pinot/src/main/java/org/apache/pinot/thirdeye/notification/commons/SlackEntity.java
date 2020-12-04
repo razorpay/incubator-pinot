@@ -26,6 +26,8 @@ import java.util.Map;
  */
 public class SlackEntity {
 	private String url;
+	private String defaultChannel;
+	private String slackToken;
 	private String summary;
 	private String description;
 	// Place holder for configuring non-standard customized slack fields
@@ -61,6 +63,22 @@ public class SlackEntity {
 
 	public void setCustomFieldsMap(Map<String, Object> customFieldsMap) {
 		this.customFieldsMap = customFieldsMap;
+	}
+	
+	public String getDefaultChannel() {
+		return defaultChannel;
+	}
+
+	public void setDefaultChannel(String defaultChannel) {
+		this.defaultChannel = defaultChannel;
+	}
+
+	public String getSlackToken() {
+		return slackToken;
+	}
+
+	public void setSlackToken(String slackToken) {
+		this.slackToken = slackToken;
 	}
 
 	@Override

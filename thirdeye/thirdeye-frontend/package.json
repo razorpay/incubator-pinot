@@ -83,7 +83,8 @@
     "liquid-wormhole": "^2.1.1",
     "loader.js": "^4.2.3",
     "sass": "^1.23.0",
-    "toastr": "^2.1.4"
+    "toastr": "^2.1.4",
+    "torii": "^0.10.1"
   },
   "engines": {
     "node": ">=10.*"

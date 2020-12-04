@@ -21,59 +21,77 @@ package org.apache.pinot.thirdeye.auth;
 
 import java.util.Objects;
 
-
 public class ThirdEyeCredentials {
-  String principal;
-  String password;
-  String token;
+	String principal;
+	String password;
+	String token;
+	String code;
 
-  ThirdEyeCredentials(String principal, String password) {
-    this.principal = principal;
-    this.password = password;
-  }
+	/**
+	 * @return the code
+	 */
+	public String getCode() {
+		return code;
+	}
 
-  public ThirdEyeCredentials() {
-  }
+	/**
+	 * @param code the code to set
+	 */
+	public void setCode(String code) {
+		this.code = code;
+	}
+	
+	ThirdEyeCredentials(String code) {
+		this.code = code;
+	}
 
-  public String getPrincipal() {
-    return principal;
-  }
+	ThirdEyeCredentials(String principal, String password) {
+		this.principal = principal;
+		this.password = password;
+	}
 
-  public void setPrincipal(String principal) {
-    this.principal = principal;
-  }
+	public ThirdEyeCredentials() {
+	}
 
-  public String getPassword() {
-    return password;
-  }
+	public String getPrincipal() {
+		return principal;
+	}
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
+	public void setPrincipal(String principal) {
+		this.principal = principal;
+	}
 
-  public String getToken() {
-    return token;
-  }
+	public String getPassword() {
+		return password;
+	}
 
-  public void setToken(String token) {
-    this.token = token;
-  }
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
+	public String getToken() {
+		return token;
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof ThirdEyeCredentials)) {
-      return false;
-    }
-    ThirdEyeCredentials that = (ThirdEyeCredentials) o;
-    return (Objects.equals(principal, that.principal) && Objects.equals(password, that.password))
-        || Objects.equals(token, that.token);
-  }
+	public void setToken(String token) {
+		this.token = token;
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(principal, password);
-  }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof ThirdEyeCredentials)) {
+			return false;
+		}
+		ThirdEyeCredentials that = (ThirdEyeCredentials) o;
+		return (Objects.equals(principal, that.principal) && Objects.equals(password, that.password))
+		        || Objects.equals(token, that.token);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(principal, password);
+	}
 }

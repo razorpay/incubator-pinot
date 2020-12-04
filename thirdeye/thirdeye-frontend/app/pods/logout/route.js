@@ -12,6 +12,19 @@ export default Route.extend(AuthenticatedRouteMixin, {
 
   beforeModel() {
     this._super(...arguments);
-    this.get('session').invalidate();
-  }
+    this.get("session").invalidate();
+  },
+
+  async model(params) {
+    const headers = {};
+    let sessionToken = this.get("session.data.authenticated.session");
+    if (sessionToken && !isEmpty(sessionToken)) {
+      console.get("in headers");
+      headers["Authorization"] = "Token " + sessionToken;
+    }
+
+    return hash({
+      headers,
+    });
+  },
 });

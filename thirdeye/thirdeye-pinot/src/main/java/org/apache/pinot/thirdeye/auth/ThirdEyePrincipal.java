@@ -23,24 +23,42 @@ import java.security.Principal;
 
 public class ThirdEyePrincipal implements Principal {
 
-  private final String name; // 'username@domainName'
-  private final String sessionKey;
+	private final String name; // 'username@domainName'
+	private final String sessionKey;
+	private String emailId;
+	private String token;
 
-  public ThirdEyePrincipal(final String name) {
-    this(name, null);
-  }
+	public ThirdEyePrincipal(final String name) {
+		this(name, null);
+	}
 
-  public ThirdEyePrincipal(final String name, final String sessionKey) {
-    this.name = name;
-    this.sessionKey = sessionKey;
-  }
+	public ThirdEyePrincipal(final String name, final String sessionKey) {
+		this.name = name;
+		this.sessionKey = sessionKey;
+	}
 
-  @Override
-  public String getName() {
-    return name;
-  }
+	@Override
+	public String getName() {
+		return name;
+	}
 
-  public String getSessionKey() {
-    return sessionKey;
-  }
+	public String getSessionKey() {
+		return sessionKey;
+	}
+
+	public String getEmailId() {
+		return emailId;
+	}
+
+	public void setEmailId(String emailId) {
+		this.emailId = emailId;
+	}
+	
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
 }

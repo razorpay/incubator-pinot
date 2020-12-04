@@ -31,7 +31,8 @@ alerterConfiguration:
     smtpPort: 25
   slackConfiguration:
     webhookUrl: "replaceme"
-    defaultChannel: "replaceme"
+    defaultChannel: "#obsv_test_alerts"
+    slackToken: "replaceme"
   # slackUser: <REPLACE_ME>
 
 #  jiraConfiguration:

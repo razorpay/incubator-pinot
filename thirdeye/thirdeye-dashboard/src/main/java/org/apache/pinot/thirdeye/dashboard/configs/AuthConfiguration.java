@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 public class AuthConfiguration {
   boolean authEnabled;
 
@@ -50,6 +49,12 @@ public class AuthConfiguration {
   long cacheTTL; // in seconds
 
   long cookieTTL; // in seconds
+
+  String authProvider;
+  String tokenURL;
+  String clientId;
+  String clientSecret;
+  String redirectURL;
 
   public Set<String> getAllowedPaths() {
     return allowedPaths;
@@ -113,5 +118,45 @@ public class AuthConfiguration {
 
   public void setCookieTTL(long cookieTTL) {
     this.cookieTTL = cookieTTL;
+  }
+
+  public String getAuthProvider() {
+    return authProvider;
+  }
+
+  public void setAuthProvider(String authProvider) {
+    this.authProvider = authProvider;
+  }
+
+  public String getTokenURL() {
+    return tokenURL;
+  }
+
+  public void setTokenURL(String tokenURL) {
+    this.tokenURL = tokenURL;
+  }
+
+  public String getClientId() {
+    return clientId;
+  }
+
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
+  }
+
+  public String getClientSecret() {
+    return clientSecret;
+  }
+
+  public void setClientSecret(String clientSecret) {
+    this.clientSecret = clientSecret;
+  }
+
+  public String getRedirectURL() {
+    return redirectURL;
+  }
+
+  public void setRedirectURL(String redirectURL) {
+    this.redirectURL = redirectURL;
   }
 }

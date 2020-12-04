@@ -13,10 +13,23 @@ export default Route.extend(AuthenticatedRouteMixin, {
   /**
    * Default to 'alerts' for this model's root path request
    */
-  afterModel: function(user, transition) {
-    if (transition.targetName === this.routeName + '.index') {
-      this.transitionTo('manage.alerts');
+  afterModel: function (user, transition) {
+    if (transition.targetName === this.routeName + ".index") {
+      this.transitionTo("manage.alerts");
     }
+  },
+
+  async model(params) {
+    const headers = {};
+    let sessionToken = this.get("session.data.authenticated.session");
+    if (sessionToken && !isEmpty(sessionToken)) {
+      console.get("in headers");
+      headers["Authorization"] = "Token " + sessionToken;
+    }
+
+    return hash({
+      headers,
+    });
   },
 
   actions: {
@@ -26,8 +39,8 @@ export default Route.extend(AuthenticatedRouteMixin, {
      */
     willTransition(transition) {
       //saving session url - TODO: add a util or service - lohuynh
-      if (transition.intent.name && transition.intent.name !== 'logout') {
-        this.set('session.store.fromUrl', {lastIntentTransition: transition});
+      if (transition.intent.name && transition.intent.name !== "logout") {
+        this.set("session.store.fromUrl", { lastIntentTransition: transition });
       }
     },
 
@@ -36,12 +49,12 @@ export default Route.extend(AuthenticatedRouteMixin, {
     },
 
     /**
-    * Refresh route's model.
-    * @method refreshModel
-    * @return {undefined}
-    */
+     * Refresh route's model.
+     * @method refreshModel
+     * @return {undefined}
+     */
     refreshModel() {
       this.refresh();
-    }
-  }
+    },
+  },
 });

@@ -54,6 +54,13 @@ export default Route.extend(AuthenticatedRouteMixin, {
     const subscriptionGroups = await this.get('anomaliesApiService').querySubscriptionGroups(); // Get all subscription groups available
     const getAnomaliesTask = this.get('_getAnomalyMapping');
 
+    const headers = {};
+    let sessionToken = this.get("session.data.authenticated.session");
+    if (sessionToken && !isEmpty(sessionToken)) {
+      console.get("in headers")
+      headers["Authorization"] = "Token " + sessionToken;
+    }
+    
     return hash({
       appName,
       startDate,
@@ -63,7 +70,8 @@ export default Route.extend(AuthenticatedRouteMixin, {
       subscriptionGroups,
       feedbackType,
       subGroup,
-      getAnomaliesTask
+      getAnomaliesTask,
+      headers,
     });
   },
 

@@ -10,10 +10,13 @@ export default Component.extend({
      */
     onLogin() {
       const credentials = {
-        principal: this.get('username'),
-        password: this.get('password')
+        principal: this.get("username"),
+        password: this.get("password"),
       };
       this.attrs.onLogin(credentials);
-    }
-  }
+    },
+    onGoogleLogin() {
+      this.attrs.onGoogleLogin();
+    },
+  },
 });

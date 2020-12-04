@@ -21,11 +21,19 @@ export default Route.extend(AuthenticatedRouteMixin, {
   analysisRange: [moment().add(1, 'day').subtract(30, 'day').startOf('day').valueOf(), moment().add(1, 'day').startOf('day').valueOf()],
 
   async model(params) {
+    const headers = {};
+    let sessionToken = this.get("session.data.authenticated.session");
+    if (sessionToken && !isEmpty(sessionToken)) {
+      headers["Authorization"] = "Token " + sessionToken;
+    }
+    headers["content-type"] = ["application/json"];
+
+
     const alertId = params.alert_id;
     const analysisRange = get(this, 'analysisRange');
     const getProps = {
-      method: 'get',
-      headers: { 'content-type': 'application/json' }
+      method: "get",
+      headers, // headers: { 'content-type': 'application/json' }
     };
     const notifications = get(this, 'notifications');
 

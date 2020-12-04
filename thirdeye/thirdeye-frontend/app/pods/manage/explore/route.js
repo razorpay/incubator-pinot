@@ -19,10 +19,21 @@ export default Route.extend(AuthenticatedRouteMixin, {
   async model(params) {
     const alertId = params.alert_id;
     const analysisRange = get(this, 'analysisRange');
+
+    const headers = {};
+    let sessionToken = this.get("session.data.authenticated.session");
+    if (sessionToken && !isEmpty(sessionToken)) {
+      headers["Authorization"] = "Token " + sessionToken;
+    }
+    headers["content-type"] = ["application/json"];
+
     const getProps = {
-      method: 'get',
-      headers: { 'content-type': 'application/json' }
+      method: "get",
+      headers,
+      // headers: { 'content-type': 'application/json' }
     };
+
+  
     const notifications = get(this, 'notifications');
 
     //detection alert fetch

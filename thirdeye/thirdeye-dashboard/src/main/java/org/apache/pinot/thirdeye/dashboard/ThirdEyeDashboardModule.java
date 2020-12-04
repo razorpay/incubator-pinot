@@ -29,12 +29,15 @@ import com.google.inject.Singleton;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.CachingAuthenticator;
 import io.dropwizard.setup.Environment;
+
+import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apache.pinot.thirdeye.auth.ThirdEyeAuthFilter;
 import org.apache.pinot.thirdeye.auth.ThirdEyeAuthenticatorDisabled;
 import org.apache.pinot.thirdeye.auth.ThirdEyeCredentials;
 import org.apache.pinot.thirdeye.auth.ThirdEyeLdapAuthenticator;
+import org.apache.pinot.thirdeye.auth.ThirdEyeGoogleAuthenticator;
 import org.apache.pinot.thirdeye.auth.ThirdEyePrincipal;
 import org.apache.pinot.thirdeye.common.ThirdEyeConfiguration;
 import org.apache.pinot.thirdeye.dashboard.configs.AuthConfiguration;
@@ -63,155 +66,152 @@ import org.apache.pinot.thirdeye.detection.yaml.YamlResource;
 import org.apache.pinot.thirdeye.detector.email.filter.AlertFilterFactory;
 import org.apache.pinot.thirdeye.detector.function.AnomalyFunctionFactory;
 import org.apache.pinot.thirdeye.model.download.ModelDownloaderManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * This is the main Guice module for ThirdEye Dashboard Server.
- * All resources, dependencies are fed from bindings in this class.
+ * This is the main Guice module for ThirdEye Dashboard Server. All resources,
+ * dependencies are fed from bindings in this class.
  */
 public class ThirdEyeDashboardModule extends AbstractModule {
+	private static final Logger LOG = LoggerFactory.getLogger(ThirdEyeDashboardModule.class);
+	private final ThirdEyeDashboardConfiguration config;
+	private final Environment environment;
 
-  private final ThirdEyeDashboardConfiguration config;
-  private final Environment environment;
+	// TODO spyne After refactoring bindinds, remove this dependency
+	private final DAORegistry DAO_REGISTRY;
 
-  // TODO spyne After refactoring bindinds, remove this dependency
-  private final DAORegistry DAO_REGISTRY;
+	public ThirdEyeDashboardModule(final ThirdEyeDashboardConfiguration config, final Environment environment,
+			final DAORegistry DAO_REGISTRY) {
+		this.config = config;
+		this.environment = environment;
+		this.DAO_REGISTRY = DAO_REGISTRY;
+	}
 
-  public ThirdEyeDashboardModule(final ThirdEyeDashboardConfiguration config,
-      final Environment environment,
-      final DAORegistry DAO_REGISTRY) {
-    this.config = config;
-    this.environment = environment;
-    this.DAO_REGISTRY = DAO_REGISTRY;
-  }
+	@Override
+	protected void configure() {
+		/*
+		 * Since the superclass is not abstract, this requires an explicit binding to
+		 * the subclass config class else Guice will create a new instance of config
+		 */
+		bind(ThirdEyeConfiguration.class).to(ThirdEyeDashboardConfiguration.class);
+		bind(ThirdEyeDashboardConfiguration.class).toInstance(config);
+		bind(TimeSeriesLoader.class).to(DefaultTimeSeriesLoader.class);
+		bind(MetricRegistry.class).toInstance(environment.metrics());
 
-  @Override
-  protected void configure() {
-    /*
-     * Since the superclass is not abstract, this requires an explicit binding to the subclass
-     *      config class else Guice will create a new instance of config
-     */
-    bind(ThirdEyeConfiguration.class).to(ThirdEyeDashboardConfiguration.class);
-    bind(ThirdEyeDashboardConfiguration.class).toInstance(config);
-    bind(TimeSeriesLoader.class).to(DefaultTimeSeriesLoader.class);
-    bind(MetricRegistry.class).toInstance(environment.metrics());
+		/*
+		 * TODO spyne Refactor DAO_REGISTRY bindings
+		 *
+		 * These bindings added here are a temporary hack. The goal is to leverage the
+		 * DataSourceModule module directly to inject these classes. That way, all
+		 * dependencies can be injected by Guice. This will be done in subsequent phases
+		 * of refactoring.
+		 */
+		bind(ConfigManager.class).toInstance(DAO_REGISTRY.getConfigDAO());
+		bind(EventManager.class).toInstance(DAO_REGISTRY.getEventDAO());
+		bind(MergedAnomalyResultManager.class).toInstance(DAO_REGISTRY.getMergedAnomalyResultDAO());
+		bind(DatasetConfigManager.class).toInstance(DAO_REGISTRY.getDatasetConfigDAO());
+		bind(MetricConfigManager.class).toInstance(DAO_REGISTRY.getMetricConfigDAO());
+		bind(DetectionConfigManager.class).toInstance(DAO_REGISTRY.getDetectionConfigManager());
+		bind(RootcauseSessionManager.class).toInstance(DAO_REGISTRY.getRootcauseSessionDAO());
+		bind(SessionManager.class).toInstance(DAO_REGISTRY.getSessionDAO());
+		bind(DetectionAlertConfigManager.class).toInstance(DAO_REGISTRY.getDetectionAlertConfigManager());
+		bind(ApplicationManager.class).toInstance(DAO_REGISTRY.getApplicationDAO());
+		bind(QueryCache.class).toInstance(ThirdEyeCacheRegistry.getInstance().getQueryCache());
+		bind(TimeSeriesCache.class).toInstance(ThirdEyeCacheRegistry.getInstance().getTimeSeriesCache());
+		bind(RootCauseResource.class).toProvider(new RootCauseResourceProvider(config)).in(Scopes.SINGLETON);
+	}
 
-    /*
-     * TODO spyne Refactor DAO_REGISTRY bindings
-     *
-     * These bindings added here are a temporary hack. The goal is to leverage the DataSourceModule
-     * module directly to inject these classes. That way, all dependencies can be injected by Guice.
-     * This will be done in subsequent phases of refactoring.
-     */
-    bind(ConfigManager.class).toInstance(DAO_REGISTRY.getConfigDAO());
-    bind(EventManager.class).toInstance(DAO_REGISTRY.getEventDAO());
-    bind(MergedAnomalyResultManager.class).toInstance(DAO_REGISTRY.getMergedAnomalyResultDAO());
-    bind(DatasetConfigManager.class).toInstance(DAO_REGISTRY.getDatasetConfigDAO());
-    bind(MetricConfigManager.class).toInstance(DAO_REGISTRY.getMetricConfigDAO());
-    bind(DetectionConfigManager.class).toInstance(DAO_REGISTRY.getDetectionConfigManager());
-    bind(RootcauseSessionManager.class).toInstance(DAO_REGISTRY.getRootcauseSessionDAO());
-    bind(SessionManager.class).toInstance(DAO_REGISTRY.getSessionDAO());
-    bind(DetectionAlertConfigManager.class)
-        .toInstance(DAO_REGISTRY.getDetectionAlertConfigManager());
-    bind(ApplicationManager.class).toInstance(DAO_REGISTRY.getApplicationDAO());
-    bind(QueryCache.class).toInstance(ThirdEyeCacheRegistry.getInstance().getQueryCache());
-    bind(TimeSeriesCache.class)
-        .toInstance(ThirdEyeCacheRegistry.getInstance().getTimeSeriesCache());
-    bind(RootCauseResource.class)
-        .toProvider(new RootCauseResourceProvider(config))
-        .in(Scopes.SINGLETON);
-  }
+	@Singleton
+	@Provides
+	public AnomalyFunctionFactory getAnomalyFunctionFactory() {
+		return new AnomalyFunctionFactory(config.getFunctionConfigPath());
+	}
 
-  @Singleton
-  @Provides
-  public AnomalyFunctionFactory getAnomalyFunctionFactory() {
-    return new AnomalyFunctionFactory(config.getFunctionConfigPath());
-  }
+	@Singleton
+	@Provides
+	public AlertFilterFactory getAlertFilterFactory() {
+		return new AlertFilterFactory(config.getAlertFilterConfigPath());
+	}
 
-  @Singleton
-  @Provides
-  public AlertFilterFactory getAlertFilterFactory() {
-    return new AlertFilterFactory(config.getAlertFilterConfigPath());
-  }
+	@Singleton
+	@Provides
+	public YamlResource getYamlResource() {
+		return new YamlResource(config.getAlerterConfiguration(), config.getDetectionPreviewConfig(),
+				config.getAlertOnboardingPermitPerSecond());
+	}
 
-  @Singleton
-  @Provides
-  public YamlResource getYamlResource() {
-    return new YamlResource(config.getAlerterConfiguration(),
-        config.getDetectionPreviewConfig(),
-        config.getAlertOnboardingPermitPerSecond());
-  }
+	@Singleton
+	@Provides
+	public ModelDownloaderManager getModelDownloaderManager() {
+		return new ModelDownloaderManager(config.getModelDownloaderConfig());
+	}
 
-  @Singleton
-  @Provides
-  public ModelDownloaderManager getModelDownloaderManager() {
-    return new ModelDownloaderManager(config.getModelDownloaderConfig());
-  }
+	@Singleton
+	@Provides
+	public AggregationLoader getAggregationLoader(final QueryCache queryCache) {
+		return new DefaultAggregationLoader(DAO_REGISTRY.getMetricConfigDAO(), DAO_REGISTRY.getDatasetConfigDAO(),
+				queryCache, ThirdEyeCacheRegistry.getInstance().getDatasetMaxDataTimeCache());
+	}
 
-  @Singleton
-  @Provides
-  public AggregationLoader getAggregationLoader(final QueryCache queryCache) {
-    return new DefaultAggregationLoader(DAO_REGISTRY.getMetricConfigDAO(),
-        DAO_REGISTRY.getDatasetConfigDAO(),
-        queryCache,
-        ThirdEyeCacheRegistry.getInstance().getDatasetMaxDataTimeCache());
-  }
+	@Singleton
+	@Provides
+	public RootCauseMetricResource getRootCauseMetricResource(final AggregationLoader aggregationLoader,
+			final TimeSeriesLoader timeSeriesLoader, final MetricConfigManager metricConfigManager,
+			final DatasetConfigManager datasetConfigManager) {
+		return new RootCauseMetricResource(Executors.newCachedThreadPool(), aggregationLoader, timeSeriesLoader,
+				metricConfigManager, datasetConfigManager);
+	}
 
-  @Singleton
-  @Provides
-  public RootCauseMetricResource getRootCauseMetricResource(
-      final AggregationLoader aggregationLoader,
-      final TimeSeriesLoader timeSeriesLoader,
-      final MetricConfigManager metricConfigManager,
-      final DatasetConfigManager datasetConfigManager) {
-    return new RootCauseMetricResource(Executors.newCachedThreadPool(),
-        aggregationLoader,
-        timeSeriesLoader,
-        metricConfigManager,
-        datasetConfigManager);
-  }
+	@Singleton
+	@Provides
+	public Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> getAuthenticator(final MetricRegistry metricRegistry,
+			final SessionManager sessionManager) {
+		final AuthConfiguration authConfig = config.getAuthConfig();
+		String authProvider = authConfig.getAuthProvider();
+		// default permissive authenticator
+		Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> authenticator = new ThirdEyeAuthenticatorDisabled();
 
-  @Singleton
-  @Provides
-  public Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> getAuthenticator(
-      final MetricRegistry metricRegistry,
-      final SessionManager sessionManager) {
-    final AuthConfiguration authConfig = config.getAuthConfig();
+		if (authConfig.isAuthEnabled()) {
+			LOG.info("Authenticating via '{}'", authProvider);
+			switch (authProvider) {
+			case "google":
+				HashMap<String, String> configMap = new HashMap<String, String>();
+				configMap.put("tokenURL", authConfig.getTokenURL());
+				configMap.put("clientId", authConfig.getClientId());
+				configMap.put("clientSecret", authConfig.getClientSecret());
+				configMap.put("redirectURL", authConfig.getRedirectURL());
+				final ThirdEyeGoogleAuthenticator authenticatorGoogle = new ThirdEyeGoogleAuthenticator(sessionManager,
+						configMap);
+				authenticator = new CachingAuthenticator<>(metricRegistry, authenticatorGoogle,
+						Caffeine.newBuilder().expireAfterWrite(authConfig.getCacheTTL(), TimeUnit.SECONDS));
+				break;
+			case "ldap":
+				final ThirdEyeLdapAuthenticator authenticatorLdap = new ThirdEyeLdapAuthenticator(
+						authConfig.getDomainSuffix(), authConfig.getLdapUrl(), sessionManager);
+				authenticator = new CachingAuthenticator<>(metricRegistry, authenticatorLdap,
+						Caffeine.newBuilder().expireAfterWrite(authConfig.getCacheTTL(), TimeUnit.SECONDS));
+				break;
+			default:
+				LOG.info("Invalid auth Provider or it is not configured in dashboard.yml. '{}'", authProvider);
+			}
+		}
+		return authenticator;
+	}
 
-    // default permissive authenticator
-    Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> authenticator = new ThirdEyeAuthenticatorDisabled();
+	@Singleton
+	@Provides
+	public ThirdEyeAuthFilter getThirdEyeAuthFilter(
+			final Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> authenticator) {
+		final AuthConfiguration authConfig = config.getAuthConfig();
+		return new ThirdEyeAuthFilter(authenticator, authConfig.getAllowedPaths(), authConfig.getAdminUsers(),
+				DAORegistry.getInstance().getSessionDAO());
+	}
 
-    // ldap authenticator
-    if (authConfig.isAuthEnabled()) {
-      final ThirdEyeLdapAuthenticator
-          authenticatorLdap = new ThirdEyeLdapAuthenticator(
-          authConfig.getDomainSuffix(),
-          authConfig.getLdapUrl(),
-          sessionManager);
-      authenticator = new CachingAuthenticator<>(
-          metricRegistry,
-          authenticatorLdap,
-          Caffeine.newBuilder().expireAfterWrite(authConfig.getCacheTTL(), TimeUnit.SECONDS));
-    }
-    return authenticator;
-  }
-
-
-  @Singleton
-  @Provides
-  public ThirdEyeAuthFilter getThirdEyeAuthFilter(
-      final Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> authenticator) {
-    final AuthConfiguration authConfig = config.getAuthConfig();
-    return new ThirdEyeAuthFilter(authenticator,
-        authConfig.getAllowedPaths(),
-        authConfig.getAdminUsers(),
-        DAORegistry.getInstance().getSessionDAO());
-  }
-
-  @Singleton
-  @Provides
-  public AuthResource getAuthResource(
-      final Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> authenticator) {
-    final AuthConfiguration authConfig = config.getAuthConfig();
-    return new AuthResource(authenticator, authConfig.getCookieTTL() * 1000);
-  }
+	@Singleton
+	@Provides
+	public AuthResource getAuthResource(final Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> authenticator) {
+		final AuthConfiguration authConfig = config.getAuthConfig();
+		return new AuthResource(authenticator, authConfig.getCookieTTL() * 1000);
+	}
 }

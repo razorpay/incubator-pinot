@@ -32,10 +32,10 @@ services:
   thirdeye_frontend:
     image: razorpay/thirdeye
     volumes:
-      - ./thirdeye/thirdeye-dashboard/config/persistence.yml:/opt/thirdeye/config/default/persistence.yml
-      - ./thirdeye/thirdeye-dashboard/config/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
-      #- ./thirdeye/thirdeye-pinot/config-templates/cloud/persistence.yml.tmpl:/opt/thirdeye/config/default/persistence.yml.tmpl
-      #- ./thirdeye/thirdeye-pinot/config-templates/cloud/data-sources/data-sources-config.yml.tmpl:/opt/thirdeye/config/default/data-sources/data-sources-config.yml.tmpl
+      # - ./thirdeye/thirdeye-dashboard/config/persistence.yml:/opt/thirdeye/config/default/persistence.yml
+      # - ./thirdeye/thirdeye-dashboard/config/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
+      - ./thirdeye/thirdeye-pinot/config-templates/cloud/persistence.yml.tmpl:/opt/thirdeye/config/default/persistence.yml.tmpl
+      - ./thirdeye/thirdeye-pinot/config-templates/cloud/data-sources/data-sources-config.yml.tmpl:/opt/thirdeye/config/default/data-sources/data-sources-config.yml.tmpl
       - ./thirdeye/configs/others/jmx_config.yml:/opt/thirdeye/config/default/jmx_config.yml
         #- ./thirdeye/thirdeye-pinot/config-templates/dev/persistence.yml:/opt/thirdeye/config/default/persistence.yml
         #- ./thirdeye/thirdeye-pinot/config-templates/dev/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml

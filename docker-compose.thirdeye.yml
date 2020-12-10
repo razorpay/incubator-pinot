@@ -34,6 +34,9 @@ services:
     volumes:
       - ./thirdeye/thirdeye-dashboard/config/persistence.yml:/opt/thirdeye/config/default/persistence.yml
       - ./thirdeye/thirdeye-dashboard/config/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
+      - ./thirdeye/thirdeye-dashboard/config/detector.yml:/opt/thirdeye/config/default/detector.yml
+      # - ./thirdeye/thirdeye-dashboard/config/dashboard.yml:/opt/thirdeye/config/default/dashboard.yml
+      # - ./thirdeye/thirdeye-dashboard/config/rca.yml:/opt/thirdeye/config/default/rca.yml
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/persistence.yml.tmpl:/opt/thirdeye/config/default/persistence.yml.tmpl
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/data-sources/data-sources-config.yml.tmpl:/opt/thirdeye/config/default/data-sources/data-sources-config.yml.tmpl
       - ./thirdeye/configs/others/jmx_config.yml:/opt/thirdeye/config/default/jmx_config.yml
@@ -51,6 +54,7 @@ services:
       DRUID_PWD: admin
       APP_MODE: prod
       JMX_CONFIG: "-Xms1G -Xmx3G"
+      SLACK_TOKEN: abcd
     ports:
       - 1426:1426
       - 1427:1427
@@ -67,6 +71,9 @@ services:
     volumes:
       - ./thirdeye/thirdeye-dashboard/config/persistence.yml:/opt/thirdeye/config/default/persistence.yml
       - ./thirdeye/thirdeye-dashboard/config/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
+      - ./thirdeye/thirdeye-dashboard/config/detector.yml:/opt/thirdeye/config/default/detector.yml
+      # - ./thirdeye/thirdeye-dashboard/config/dashboard.yml:/opt/thirdeye/config/default/dashboard.yml
+      # - ./thirdeye/thirdeye-dashboard/config/rca.yml:/opt/thirdeye/config/default/rca.yml
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/persistence.yml.tmpl:/opt/thirdeye/config/default/persistence.yml.tmpl
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/data-sources/data-sources-config.yml.tmpl:/opt/thirdeye/config/default/data-sources/data-sources-config.yml.tmpl
       - ./thirdeye/configs/jmx_config.yml:/opt/thirdeye/config/default/jmx_config.yml
@@ -86,6 +93,7 @@ services:
       DRUID_PWD: admin
       APP_MODE: prod
       JMX_CONFIG: "-Xms1G -Xmx3G"
+      SLACK_TOKEN: abcd
     entrypoint: ["/bin/sh", "/opt/thirdeye/bin/entrypoint_dev.sh", "backend"]
     #entrypoint: ["/bin/sh", "/opt/thirdeye/bin/entrypoint.sh", "backend"]
     depends_on:

@@ -33,6 +33,13 @@ elif [[ "${APP_MODE}" == "prod" ]]; then
 sed -e 's/POSTGRES_HOSTNAME/'"$POSTGRES_HOSTNAME"'/' -e 's/POSTGRES_PORT/'"$POSTGRES_PORT"'/' -e 's/POSTGRES_DATABASE/'"$POSTGRES_DATABASE"'/' -e 's/POSTGRESQL_PASSWORD/'"$POSTGRESQL_PASSWORD"'/' -e 's/DRUID_USERNAME/'"$DRUID_USER"'/' -e 's/DRUID_PASSWORD/'"$DRUID_PWD"'/' $CONFIG_DIR/data-sources/data-sources-config.yml.tmpl > $CONFIG_DIR/data-sources/data-sources-config.yml
 fi
 
+echo "Setting Detector Config File : $CONFIG_DIR/detector.yml"
+if [[ "${APP_MODE}" == "stage" ]]; then
+sed -e 's/SLACK_TOKEN/'"$SLACK_TOKEN"'/' $CONFIG_DIR/detector.yml.tmpl > $CONFIG_DIR/detector.yml
+elif [[ "${APP_MODE}" == "prod" ]]; then
+sed -e 's/SLACK_TOKEN/'"$SLACK_TOKEN"'/' $CONFIG_DIR/detector.yml.tmpl > $CONFIG_DIR/detector.yml
+fi
+
 app_type=$1
 if [[ "${app_type}" == "frontend" ]]; then
 echo "Starting TE Frontend"

@@ -178,9 +178,9 @@ public class ThirdEyeDashboardModule extends AbstractModule {
 			case "google":
 				HashMap<String, String> configMap = new HashMap<String, String>();
 				configMap.put("tokenURL", authConfig.getTokenURL());
-				configMap.put("clientId", authConfig.getClientId());
-				configMap.put("clientSecret", authConfig.getClientSecret());
-				configMap.put("redirectURL", authConfig.getRedirectURL());
+				configMap.put("clientId", System.getenv("GOOGLE_CLIENT_ID"));
+				configMap.put("clientSecret", System.getenv("GOOGLE_CLIENT_SECRET"));
+				configMap.put("redirectURL", System.getenv("GOOGLE_AUTH_REDIRECT_URL"));
 				final ThirdEyeGoogleAuthenticator authenticatorGoogle = new ThirdEyeGoogleAuthenticator(sessionManager,
 						configMap);
 				authenticator = new CachingAuthenticator<>(metricRegistry, authenticatorGoogle,

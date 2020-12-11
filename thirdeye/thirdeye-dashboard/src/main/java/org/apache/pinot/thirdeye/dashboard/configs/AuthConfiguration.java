@@ -52,9 +52,6 @@ public class AuthConfiguration {
 
   String authProvider;
   String tokenURL;
-  String clientId;
-  String clientSecret;
-  String redirectURL;
 
   public Set<String> getAllowedPaths() {
     return allowedPaths;
@@ -136,27 +133,4 @@ public class AuthConfiguration {
     this.tokenURL = tokenURL;
   }
 
-  public String getClientId() {
-    return clientId;
-  }
-
-  public void setClientId(String clientId) {
-    this.clientId = clientId;
-  }
-
-  public String getClientSecret() {
-    return clientSecret;
-  }
-
-  public void setClientSecret(String clientSecret) {
-    this.clientSecret = clientSecret;
-  }
-
-  public String getRedirectURL() {
-    return redirectURL;
-  }
-
-  public void setRedirectURL(String redirectURL) {
-    this.redirectURL = redirectURL;
-  }
 }

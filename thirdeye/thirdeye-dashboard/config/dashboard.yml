@@ -7,9 +7,6 @@ authConfig:
   cookieTTL: 604800
   authProvider: google # others can be ldap, azure
   tokenURL: "https://oauth2.googleapis.com/token"
-  clientId: "number-string.apps.googleusercontent.com" # same should be configured in thirdeye-frontend/app/.env
-  clientSecret: "google-secret"
-  redirectURL: "https://redirecturl.com/" # same should be configured in thirdeye-frontend/app/.env
 resourceConfig: []
 rootCause:
   definitionsPath: rca.yml

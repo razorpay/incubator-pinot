@@ -136,8 +136,7 @@ public class SlackContentFormatter extends AlertContentFormatter {
 			Multimap<String, String> dimensionFilters) {
 		String webhookUrl = MapUtils.getString(alertClientConfig, SlackConfiguration.SLACK_URL,
 				this.slackAdminConfig.getUrl());
-		String token = MapUtils.getString(alertClientConfig, SlackConfiguration.SLACK_TOKEN,
-				this.slackAdminConfig.getSlackToken());
+		String token = System.getenv(SlackConfiguration.SLACK_TOKEN);
 		String defaultChannel = MapUtils.getString(alertClientConfig, SlackConfiguration.DEFAULT_CHANNEL,
 				this.slackAdminConfig.getDefaultChannel());
 		SlackEntity slackEntity = new SlackEntity();

@@ -54,7 +54,7 @@ services:
       DRUID_PWD: admin
       APP_MODE: prod
       JMX_CONFIG: "-Xms1G -Xmx3G"
-      SLACK_TOKEN: abcd
+      SLACK_TOKEN: ${SLACK_TOKEN}
     ports:
       - 1426:1426
       - 1427:1427
@@ -93,7 +93,7 @@ services:
       DRUID_PWD: admin
       APP_MODE: prod
       JMX_CONFIG: "-Xms1G -Xmx3G"
-      SLACK_TOKEN: abcd
+      SLACK_TOKEN: ${SLACK_TOKEN}
     entrypoint: ["/bin/sh", "/opt/thirdeye/bin/entrypoint_dev.sh", "backend"]
     #entrypoint: ["/bin/sh", "/opt/thirdeye/bin/entrypoint.sh", "backend"]
     depends_on:

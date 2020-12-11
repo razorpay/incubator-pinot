@@ -32,7 +32,6 @@ alerterConfiguration:
   slackConfiguration:
     webhookUrl: "replaceme"
     defaultChannel: "#tech_observability"
-    slackToken: SLACK_TOKEN
 
 #  jiraConfiguration:
 #    jiraUser: <REPLACE_ME>

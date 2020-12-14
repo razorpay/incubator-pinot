@@ -20,7 +20,6 @@
 package org.apache.pinot.thirdeye.notification.commons;
 
 import static com.slack.api.model.block.composition.BlockCompositions.plainText;
-import static com.slack.api.webhook.WebhookPayloads.payload;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,12 +30,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.slack.api.Slack;
+import com.slack.api.methods.SlackApiException;
+import com.slack.api.methods.response.chat.ChatPostMessageResponse;
 import com.slack.api.model.block.DividerBlock;
 import com.slack.api.model.block.HeaderBlock;
 import com.slack.api.model.block.LayoutBlock;
 import com.slack.api.model.block.SectionBlock;
 import com.slack.api.model.block.composition.MarkdownTextObject;
-import com.slack.api.webhook.WebhookResponse;
 
 /**
  * A client to communicate with Slack
@@ -53,21 +53,23 @@ public class ThirdEyeSlackClient {
 	 * Creates a new slack message with specified settings
 	 */
 	public String createMessage(SlackEntity slackEntity) {
-		String webhookUrl = slackEntity.getUrl();
+		String defaultChannel = slackEntity.getDefaultChannel();
+		String token = slackEntity.getSlackToken();
 		List<LayoutBlock> message = new ArrayList<>();
 		message.add(HeaderBlock.builder().text(plainText("New Anomaly Alert")).build());
 		message.add(DividerBlock.builder().build());
 		message.add(SectionBlock.builder().text(MarkdownTextObject.builder().text(slackEntity.getDescription()).build())
 				.build());
-		WebhookResponse response = null;
+		ChatPostMessageResponse response = null;
 		try {
-			// p.text("Anomaly Alert") is for mobile lock screen notification 
-			response = slack.send(webhookUrl, payload(p -> p.text("Anomaly Alert").blocks(message)));
-		} catch (IOException e) {
+			// p.text("Anomaly Alert") is for mobile lock screen notification
+			response = slack.methods(token)
+					.chatPostMessage(req -> req.channel(defaultChannel).text("Anomaly Alert").blocks(message));
+		} catch (IOException | SlackApiException e) {
 			LOG.error(Arrays.toString(e.getStackTrace()));
 		}
 		if (response != null) {
-			return response.getCode().toString();
+			return response.getError();
 		}
 		return null;
 	}

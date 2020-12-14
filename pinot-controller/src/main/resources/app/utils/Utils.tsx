@@ -82,7 +82,7 @@ const getSegmentStatus = (idealStateObj, externalViewObj) => {
 
 const findNestedObj = (entireObj, keyToFind, valToFind) => {
   let foundObj;
-  JSON.stringify(entireObj, (_, nestedValue) => {
+  JSON.stringify(entireObj, (a, nestedValue) => {
     if (nestedValue && nestedValue[keyToFind] === valToFind) {
       foundObj = nestedValue;
     }
@@ -231,7 +231,7 @@ const codeMirrorOptionsTemplate = (el, data) => {
 const serialize = (obj: any, prefix?: any) => {
   let str = [], p;
   for (p in obj) {
-    if (obj.hasOwnProperty(p)) {
+    if (Object.prototype.hasOwnProperty.call(obj, p)) {
       var k = prefix ? prefix + "[" + p + "]" : p,
         v = obj[p];
       str.push((v !== null && typeof v === "object") ?
@@ -240,7 +240,49 @@ const serialize = (obj: any, prefix?: any) => {
     }
   }
   return str.join("&");
-}
+};
+
+const navigateToPreviousPage = (location, popTwice) => {
+  const hasharr = location.pathname.split('/');
+  hasharr.pop();
+  if(popTwice){
+    hasharr.pop();
+  }
+  return hasharr.join('/');
+};
+
+const syncTableSchemaData = (data, showFieldType) => {
+  const dimensionFields = data.dimensionFieldSpecs || [];
+  const metricFields = data.metricFieldSpecs || [];
+  const dateTimeField = data.dateTimeFieldSpecs || [];
+
+  dimensionFields.map((field) => {
+    field.fieldType = 'Dimension';
+  });
+
+  metricFields.map((field) => {
+    field.fieldType = 'Metric';
+  });
+
+  dateTimeField.map((field) => {
+    field.fieldType = 'Date-Time';
+  });
+  const columnList = [...dimensionFields, ...metricFields, ...dateTimeField];
+  if (showFieldType) {
+    return {
+      columns: ['Column', 'Type', 'Field Type'],
+      records: columnList.map((field) => {
+        return [field.name, field.dataType, field.fieldType];
+      }),
+    };
+  }
+  return {
+    columns: ['Column', 'Type'],
+    records: columnList.map((field) => {
+      return [field.name, field.dataType];
+    }),
+  };
+};
 
 export default {
   sortArray,
@@ -248,5 +290,7 @@ export default {
   getSegmentStatus,
   findNestedObj,
   generateCodeMirrorOptions,
-  serialize
+  serialize,
+  navigateToPreviousPage,
+  syncTableSchemaData
 };

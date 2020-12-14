@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.apache.pinot.spi.config.table.IngestionConfig;
+import org.apache.pinot.spi.config.table.ingestion.IngestionConfig;
 import org.apache.pinot.spi.config.table.TableConfig;
 import org.apache.pinot.spi.config.table.TableType;
 import org.apache.pinot.spi.config.table.ingestion.TransformConfig;
@@ -90,7 +90,7 @@ public class SchemaUtilsTest {
     // schema doesn't have destination columns from transformConfigs
     schema = new Schema.SchemaBuilder().setSchemaName(TABLE_NAME).build();
     tableConfig = new TableConfigBuilder(TableType.OFFLINE).setTableName(TABLE_NAME).setIngestionConfig(
-        new IngestionConfig(null, Lists.newArrayList(new TransformConfig("colA", "round(colB, 1000)")))).build();
+        new IngestionConfig(null, null, null, Lists.newArrayList(new TransformConfig("colA", "round(colB, 1000)")))).build();
     try {
       SchemaUtils.validate(schema, Lists.newArrayList(tableConfig));
       Assert.fail("Should fail schema validation, as colA is not present in schema");
@@ -138,7 +138,7 @@ public class SchemaUtilsTest {
         .addDateTime(TIME_COLUMN, DataType.LONG, "1:MILLISECONDS:EPOCH", "1:HOURS").build();
     tableConfig = new TableConfigBuilder(TableType.REALTIME).setTableName(TABLE_NAME).setTimeColumnName(TIME_COLUMN)
         .setIngestionConfig(
-            new IngestionConfig(null, Lists.newArrayList(new TransformConfig("colA", "round(colB, 1000)")))).build();
+            new IngestionConfig(null, null, null, Lists.newArrayList(new TransformConfig("colA", "round(colB, 1000)")))).build();
     try {
       SchemaUtils.validate(schema, Lists.newArrayList(tableConfig));
       Assert.fail("Should fail schema validation, as colA is not present in schema");
@@ -218,6 +218,24 @@ public class SchemaUtilsTest {
     pinotSchema = new Schema.SchemaBuilder()
         .addTime(new TimeGranularitySpec(DataType.LONG, TimeUnit.MILLISECONDS, "incoming"),
             new TimeGranularitySpec(DataType.INT, TimeUnit.DAYS, "outgoing")).build();
+    SchemaUtils.validate(pinotSchema);
+  }
+
+  @Test
+  public void testValidatePrimaryKeyColumns() {
+    Schema pinotSchema;
+    // non-existing column used as primary key
+    pinotSchema = new Schema.SchemaBuilder()
+        .addTime(new TimeGranularitySpec(DataType.LONG, TimeUnit.MILLISECONDS, "incoming"),
+            new TimeGranularitySpec(DataType.INT, TimeUnit.DAYS, "outgoing")).addSingleValueDimension("col", DataType.INT)
+        .setPrimaryKeyColumns(Lists.newArrayList("test")).build();
+    checkValidationFails(pinotSchema);
+
+    // valid primary key
+    pinotSchema = new Schema.SchemaBuilder()
+        .addTime(new TimeGranularitySpec(DataType.LONG, TimeUnit.MILLISECONDS, "incoming"),
+            new TimeGranularitySpec(DataType.INT, TimeUnit.DAYS, "outgoing")).addSingleValueDimension("col", DataType.INT)
+        .setPrimaryKeyColumns(Lists.newArrayList("col")).build();
     SchemaUtils.validate(pinotSchema);
   }
 

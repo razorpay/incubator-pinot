@@ -56,6 +56,7 @@
             <div class="col-xs-4 no-padding">
               {{date-range-picker
                 class="te-range-picker"
+                alwaysShowCalendars=true
                 timePicker=true
                 timePicker24Hour=true
                 timePickerIncrement=pill.timePickerIncrement
@@ -87,38 +88,25 @@
                 </label>
               </h4>
               {{!-- Alert anomaly stats cards --}}
-              {{stats-cards
-                stats=stats
-                areTwoSetsOfAnomalies=areTwoSetsOfAnomalies
-                isEditMode=isEditMode
-              }}
+              {{#if performanceStatsTaskInstance.isRunning }}
+                <div class="spinner-wrapper spinner-wrapper--card">
+                  {{ember-spinner lines=30 radius=20 length=0 width=10 opacity=0 trail=75 color='blue'}}
+                </div>
+              {{else}}  
+                {{stats-cards
+                  stats=computedStats
+                  areTwoSetsOfAnomalies=areTwoSetsOfAnomalies
+                  isEditMode=isEditMode
+                }}
+              {{/if}}
             </div>
 
-            <!-- Detection Health -->
-            <div class="te-horizontal-cards te-content-block__detection-health">
-              <h4 class="te-self-serve__block-title">
-                <label for="select-dimension" class="control-label te-label">
-                  Detection health
-                  <span>
-                    <i class="glyphicon glyphicon-question-sign"></i>
-                    {{#tooltip-on-element class="te-tooltip"}}
-                      See how your detection configuration is performing in detail
-                      by clicking 'view details' below{{#if showRules}},
-                      and select different rules above the graph
-                      to see their respective regression errors{{/if}}.
-                    {{/tooltip-on-element}}
-                  </span>
-                </label>
-              </h4>
-              {{detection-health
-                health=detectionHealth
-                selectedRule=selectedRule
-              }}
-            </div>
+            {{detection-health
+              health=detectionHealth
+              selectedRule=selectedRule
+            }}
           </div>
-
           {{else}}
-
             <!-- Anomalies, Response Rate, Precision, Recall -->
             <div class="te-horizontal-cards te-content-block">
               <h4 class="te-self-serve__block-title">
@@ -133,11 +121,17 @@
                 </label>
               </h4>
               {{!-- Alert anomaly stats cards --}}
-              {{stats-cards
-                stats=stats
-                areTwoSetsOfAnomalies=areTwoSetsOfAnomalies
-                isEditMode=isEditMode
-              }}
+              {{#if performanceStatsTaskInstance.isRunning }}
+                <div class="spinner-wrapper spinner-wrapper--card">
+                  {{ember-spinner lines=30 radius=20 length=0 width=10 opacity=0 trail=75 color='blue'}}
+                </div>
+              {{else}}  
+                {{stats-cards
+                  stats=computedStats
+                  areTwoSetsOfAnomalies=areTwoSetsOfAnomalies
+                  isEditMode=isEditMode
+                }}
+              {{/if}}
             </div>
 
           {{/if}}
@@ -381,6 +375,7 @@
             <div class="col-xs-4 no-padding">
               {{date-range-picker
                 class="te-range-picker"
+                alwaysShowCalendars=true
                 timePicker=true
                 timePicker24Hour=true
                 timePickerIncrement=pill.timePickerIncrement
@@ -414,6 +409,7 @@
           <div class="col-xs-4 no-padding">
             {{date-range-picker
               class="te-range-picker"
+              alwaysShowCalendars=true
               timePicker=true
               timePicker24Hour=true
               timePickerIncrement=pill.timePickerIncrement

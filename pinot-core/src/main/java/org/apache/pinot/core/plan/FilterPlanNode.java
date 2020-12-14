@@ -19,6 +19,7 @@
 package org.apache.pinot.core.plan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -39,6 +40,8 @@ import org.apache.pinot.core.query.request.context.QueryContext;
 import org.apache.pinot.core.query.request.context.predicate.Predicate;
 import org.apache.pinot.core.query.request.context.predicate.TextMatchPredicate;
 import org.apache.pinot.core.segment.index.readers.NullValueVectorReader;
+import org.apache.pinot.core.segment.index.readers.ValidDocIndexReader;
+import org.apache.pinot.core.util.QueryOptions;
 
 
 public class FilterPlanNode implements PlanNode {
@@ -57,8 +60,23 @@ public class FilterPlanNode implements PlanNode {
   @Override
   public BaseFilterOperator run() {
     FilterContext filter = _queryContext.getFilter();
+    ValidDocIndexReader validDocIndexReader = _indexSegment.getValidDocIndex();
+    boolean upsertSkipped = false;
+    if (_queryContext.getQueryOptions() != null) {
+      upsertSkipped = new QueryOptions(_queryContext.getQueryOptions()).isSkipUpsert();
+    }
     if (filter != null) {
-      return constructPhysicalOperator(filter, _queryContext.getDebugOptions());
+      BaseFilterOperator filterOperator = constructPhysicalOperator(filter, _queryContext.getDebugOptions());
+      if (validDocIndexReader != null && !upsertSkipped) {
+        BaseFilterOperator validDocFilter =
+            new BitmapBasedFilterOperator(validDocIndexReader.getValidDocBitmap(), false, _numDocs);
+        return FilterOperatorUtils.getAndFilterOperator(Arrays.asList(filterOperator, validDocFilter), _numDocs,
+            _queryContext.getDebugOptions());
+      } else {
+        return filterOperator;
+      }
+    } else if (validDocIndexReader != null && !upsertSkipped) {
+      return new BitmapBasedFilterOperator(validDocIndexReader.getValidDocBitmap(), false, _numDocs);
     } else {
       return new MatchAllFilterOperator(_numDocs);
     }
@@ -109,8 +127,8 @@ public class FilterPlanNode implements PlanNode {
           DataSource dataSource = _indexSegment.getDataSource(lhs.getIdentifier());
           switch (predicate.getType()) {
             case TEXT_MATCH:
-              return new TextMatchFilterOperator(dataSource.getTextIndex(),
-                  ((TextMatchPredicate) predicate).getValue(), _numDocs);
+              return new TextMatchFilterOperator(dataSource.getTextIndex(), ((TextMatchPredicate) predicate).getValue(),
+                  _numDocs);
             case IS_NULL:
               NullValueVectorReader nullValueVector = dataSource.getNullValueVector();
               if (nullValueVector != null) {

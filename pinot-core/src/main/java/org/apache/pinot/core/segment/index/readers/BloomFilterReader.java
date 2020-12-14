@@ -18,40 +18,23 @@
  */
 package org.apache.pinot.core.segment.index.readers;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import org.apache.pinot.core.bloom.BloomFilter;
-import org.apache.pinot.core.bloom.BloomFilterType;
-import org.apache.pinot.core.bloom.SegmentBloomFilterFactory;
-import org.apache.pinot.core.segment.memory.PinotDataBuffer;
+import java.io.Closeable;
 
 
 /**
- * Bloom filter reader
+ * Interface for bloom filter reader.
  */
-public class BloomFilterReader {
+public interface BloomFilterReader extends Closeable {
 
-  private BloomFilter _bloomFilter;
+  /**
+   * Returns {@code true} if the given value might have been put in this bloom filer, {@code false} otherwise.
+   */
+  boolean mightContain(String value);
 
-  public BloomFilterReader(PinotDataBuffer bloomFilterBuffer)
-      throws IOException {
-    byte[] buffer = new byte[(int) bloomFilterBuffer.size()];
-    bloomFilterBuffer.copyTo(0, buffer);
-
-    try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(buffer))) {
-      BloomFilterType bloomFilterType = BloomFilterType.valueOf(in.readInt());
-      int version = in.readInt();
-      _bloomFilter = SegmentBloomFilterFactory.createSegmentBloomFilter(bloomFilterType);
-      if (version != _bloomFilter.getVersion()) {
-        throw new IOException(
-            "Unexpected bloom filter version (type: " + bloomFilterType.toString() + ", version: " + version);
-      }
-      _bloomFilter.readFrom(in);
-    }
-  }
-
-  public boolean mightContain(Object key) {
-    return _bloomFilter.mightContain(key.toString());
-  }
+  /**
+   * Returns {@code true} if the value with the given hash might have been put in this bloom filer, {@code false}
+   * otherwise.
+   * <p>This method is provided to prevent hashing the same value multiple times.
+   */
+  boolean mightContain(long hash1, long hash2);
 }

@@ -24,6 +24,11 @@ import {
   getTenants,
   getInstances,
   getInstance,
+  putInstance,
+  setInstanceState,
+  setTableState,
+  dropInstance,
+  updateInstanceTags,
   getClusterConfig,
   getQueryTables,
   getTableSchema,
@@ -34,6 +39,7 @@ import {
   getExternalView,
   getTenantTableDetails,
   getSegmentMetadata,
+  reloadSegment,
   getClusterInfo,
   zookeeperGetList,
   zookeeperGetData,
@@ -42,7 +48,23 @@ import {
   zookeeperPutData,
   zookeeperDeleteNode,
   getBrokerListOfTenant,
-  getServerListOfTenant
+  getServerListOfTenant,
+  deleteSegment,
+  putTable,
+  putSchema,
+  deleteTable,
+  deleteSchema,
+  reloadAllSegments,
+  reloadStatus,
+  rebalanceServersForTable,
+  rebalanceBrokersForTable,
+  validateSchema,
+  validateTable,
+  saveSchema,
+  saveTable,
+  getSchema,
+  getSchemaList,
+  getState
 } from '../requests';
 import Utils from './Utils';
 
@@ -52,8 +74,8 @@ import Utils from './Utils';
 const getTenantsData = () => {
   return getTenants().then(({ data }) => {
     const records = _.union(data.SERVER_TENANTS, data.BROKER_TENANTS);
-    let promiseArr = [];
-    let finalResponse = {
+    const promiseArr = [];
+    const finalResponse = {
       columns: ['Tenant Name', 'Server', 'Broker', 'Tables'],
       records: []
     };
@@ -88,7 +110,7 @@ const getAllInstances = () => {
       r[key] = [...(r[key] || []), a];
       return r;
     }, initialVal);
-    return {"Controller": groupedData.Controller, ...groupedData};
+    return {'Controller': groupedData.Controller, ...groupedData};
   });
 };
 
@@ -127,7 +149,7 @@ const getClusterName = () => {
 // API: /zk/ls?path=:ClusterName/LIVEINSTANCES
 // Expected Output: []
 const getLiveInstance = (clusterName) => {
-  const params = encodeURIComponent(`/${clusterName}/LIVEINSTANCES`)
+  const params = encodeURIComponent(`/${clusterName}/LIVEINSTANCES`);
   return zookeeperGetList(params).then((data) => {
     return data;
   });
@@ -149,13 +171,13 @@ const getClusterConfigData = () => {
 // API: /tables
 // Expected Output: {columns: [], records: []}
 const getQueryTablesList = ({bothType = false}) => {
-  let promiseArr = bothType ? [getQueryTables('realtime'), getQueryTables('offline')] : [getQueryTables()];
+  const promiseArr = bothType ? [getQueryTables('realtime'), getQueryTables('offline')] : [getQueryTables()];
   
   return Promise.all(promiseArr).then((results) => {
-    let responseObj = {
+    const responseObj = {
       columns: ['Tables'],
       records:  []
-    }
+    };
     results.map((result)=>{
       result.data.tables.map((table)=>{
         responseObj.records.push([table]);
@@ -167,39 +189,9 @@ const getQueryTablesList = ({bothType = false}) => {
 
 // This method is used to display particular table schema on query page
 // API: /tables/:tableName/schema
-// Expected Output: {columns: [], records: []}
-const getTableSchemaData = (tableName, showFieldType) => {
+const getTableSchemaData = (tableName) => {
   return getTableSchema(tableName).then(({ data }) => {
-    const dimensionFields = data.dimensionFieldSpecs || [];
-    const metricFields = data.metricFieldSpecs || [];
-    const dateTimeField = data.dateTimeFieldSpecs || [];
-
-    dimensionFields.map((field) => {
-      field.fieldType = 'Dimension';
-    });
-
-    metricFields.map((field) => {
-      field.fieldType = 'Metric';
-    });
-
-    dateTimeField.map((field) => {
-      field.fieldType = 'Date-Time';
-    });
-    const columnList = [...dimensionFields, ...metricFields, ...dateTimeField];
-    if (showFieldType) {
-      return {
-        columns: ['column', 'type', 'Field Type'],
-        records: columnList.map((field) => {
-          return [field.name, field.dataType, field.fieldType];
-        }),
-      };
-    }
-    return {
-      columns: ['column', 'type'],
-      records: columnList.map((field) => {
-        return [field.name, field.dataType];
-      }),
-    };
+    return data;
   });
 };
 
@@ -272,7 +264,7 @@ const getQueryResults = (params, url, checkedOptions) => {
       dataArray = queryResponse.resultTable.rows;
     }
 
-    const columnStats = [ 'timeUsedMs',
+    const columnStats = ['timeUsedMs',
       'numDocsScanned',
       'totalDocs',
       'numServersQueried',
@@ -311,6 +303,49 @@ const getQueryResults = (params, url, checkedOptions) => {
 //      /tables/:tableName/externalview
 // Expected Output: {columns: [], records: []}
 const getTenantTableData = (tenantName) => {
+  return getTenantTable(tenantName).then(({ data }) => {
+    const tableArr = data.tables.map((table) => table);
+    return getAllTableDetails(tableArr);
+  });
+};
+
+const getSchemaObject = async (schemaName) =>{
+  let schemaObj:Array<any> = [];
+    let {data} = await getSchema(schemaName);
+    console.log(data);
+      schemaObj.push(data.schemaName);
+      schemaObj.push(data.dimensionFieldSpecs ? data.dimensionFieldSpecs.length : 0);
+      schemaObj.push(data.dateTimeFieldSpecs ? data.dateTimeFieldSpecs.length : 0);
+      schemaObj.push(data.metricFieldSpecs ? data.metricFieldSpecs.length : 0);
+      schemaObj.push(schemaObj[1] + schemaObj[2] + schemaObj[3]);
+      return schemaObj;
+  }
+
+const getAllSchemaDetails = async () => {
+  const columnHeaders = ["Schema Name", "Dimension Columns", "Date-Time Columns", "Metrics Columns", "Total Columns"]
+  let schemaDetails:Array<any> = [];
+  let promiseArr = [];
+  const {data} = await getSchemaList()
+  promiseArr = data.map(async (o)=>{
+    return await getSchema(o);
+  });
+  const results = await Promise.all(promiseArr);
+  schemaDetails = results.map((obj)=>{
+    let schemaObj = [];
+    schemaObj.push(obj.data.schemaName);
+    schemaObj.push(obj.data.dimensionFieldSpecs ? obj.data.dimensionFieldSpecs.length : 0);
+    schemaObj.push(obj.data.dateTimeFieldSpecs ? obj.data.dateTimeFieldSpecs.length : 0);
+    schemaObj.push(obj.data.metricFieldSpecs ? obj.data.metricFieldSpecs.length : 0);
+    schemaObj.push(schemaObj[1] + schemaObj[2] + schemaObj[3]);
+    return schemaObj;
+  })
+  return {
+    columns: columnHeaders,
+    records: schemaDetails
+  };
+}
+
+const getAllTableDetails = (tablesList) => {
   const columnHeaders = [
     'Table Name',
     'Reported Size',
@@ -318,67 +353,64 @@ const getTenantTableData = (tenantName) => {
     'Number of Segments',
     'Status',
   ];
-  return getTenantTable(tenantName).then(({ data }) => {
-    const tableArr = data.tables.map((table) => table);
-    if (tableArr.length) {
-      const promiseArr = [];
-      tableArr.map((name) => {
-        promiseArr.push(getTableSize(name));
-        promiseArr.push(getIdealState(name));
-        promiseArr.push(getExternalView(name));
-      });
+  if (tablesList.length) {
+    const promiseArr = [];
+    tablesList.map((name) => {
+      promiseArr.push(getTableSize(name));
+      promiseArr.push(getIdealState(name));
+      promiseArr.push(getExternalView(name));
+    });
 
-      return Promise.all(promiseArr).then((results) => {
-        let finalRecordsArr = [];
-        let singleTableData = [];
-        let idealStateObj = null;
-        let externalViewObj = null;
-        results.map((result, index) => {
-          // since we have 3 promises, we are using mod 3 below
-          if (index % 3 === 0) {
-            // response of getTableSize API
-            const {
-              tableName,
-              reportedSizeInBytes,
-              estimatedSizeInBytes,
-            } = result.data;
-            singleTableData.push(
-              tableName,
-              reportedSizeInBytes,
-              estimatedSizeInBytes
-            );
-          } else if (index % 3 === 1) {
-            // response of getIdealState API
-            idealStateObj = result.data.OFFLINE || result.data.REALTIME;
-          } else if (index % 3 === 2) {
-            // response of getExternalView API
-            externalViewObj = result.data.OFFLINE || result.data.REALTIME;
-            const externalSegmentCount = Object.keys(externalViewObj).length;
-            const idealSegmentCount = Object.keys(idealStateObj).length;
-            // Generating data for the record
-            singleTableData.push(
-              `${externalSegmentCount} / ${idealSegmentCount}`,
-              Utils.getSegmentStatus(idealStateObj, externalViewObj)
-            );
-            // saving into records array
-            finalRecordsArr.push(singleTableData);
-            // resetting the required variables
-            singleTableData = [];
-            idealStateObj = null;
-            externalViewObj = null;
-          }
-        });
-        return {
-          columns: columnHeaders,
-          records: finalRecordsArr,
-        };
+    return Promise.all(promiseArr).then((results) => {
+      const finalRecordsArr = [];
+      let singleTableData = [];
+      let idealStateObj = null;
+      let externalViewObj = null;
+      results.map((result, index) => {
+        // since we have 3 promises, we are using mod 3 below
+        if (index % 3 === 0) {
+          // response of getTableSize API
+          const {
+            tableName,
+            reportedSizeInBytes,
+            estimatedSizeInBytes,
+          } = result.data;
+          singleTableData.push(
+            tableName,
+            reportedSizeInBytes,
+            estimatedSizeInBytes
+          );
+        } else if (index % 3 === 1) {
+          // response of getIdealState API
+          idealStateObj = result.data.OFFLINE || result.data.REALTIME || {};
+        } else if (index % 3 === 2) {
+          // response of getExternalView API
+          externalViewObj = result.data.OFFLINE || result.data.REALTIME || {};
+          const externalSegmentCount = Object.keys(externalViewObj).length;
+          const idealSegmentCount = Object.keys(idealStateObj).length;
+          // Generating data for the record
+          singleTableData.push(
+            `${externalSegmentCount} / ${idealSegmentCount}`,
+            Utils.getSegmentStatus(idealStateObj, externalViewObj)
+          );
+          // saving into records array
+          finalRecordsArr.push(singleTableData);
+          // resetting the required variables
+          singleTableData = [];
+          idealStateObj = null;
+          externalViewObj = null;
+        }
       });
-    }
-    return {
-      columns: columnHeaders,
-      records: []
-    };
-  });
+      return {
+        columns: columnHeaders,
+        records: finalRecordsArr,
+      };
+    });
+  }
+  return {
+    columns: columnHeaders,
+    records: []
+  };
 };
 
 // This method is used to display summary of a particular tenant table
@@ -397,7 +429,7 @@ const getTableSummaryData = (tableName) => {
 // This method is used to display segment list of a particular tenant table
 // API: /tables/:tableName/idealstate
 //      /tables/:tableName/externalview
-// Expected Output: {columns: [], records: []}
+// Expected Output: {columns: [], records: [], externalViewObject: {}}
 const getSegmentList = (tableName) => {
   const promiseArr = [];
   promiseArr.push(getIdealState(tableName));
@@ -415,6 +447,7 @@ const getSegmentList = (tableName) => {
           _.isEqual(idealStateObj[key], externalViewObj[key]) ? 'Good' : 'Bad',
         ];
       }),
+      externalViewObj
     };
   });
 };
@@ -442,7 +475,7 @@ const getSegmentDetails = (tableName, segmentName) => {
     const obj = results[0].data.OFFLINE || results[0].data.REALTIME;
     const segmentMetaData = results[1].data;
 
-    let result = [];
+    const result = [];
     for (const prop in obj[segmentName]) {
       if (obj[segmentName]) {
         result.push([prop, obj[segmentName][prop]]);
@@ -473,7 +506,7 @@ const getLiveInstanceConfig = (clusterName, instanceName) => {
   const params = encodeURIComponent(`/${clusterName}/LIVEINSTANCES/${instanceName}`);
   return zookeeperGetData(params).then((res) => {
     return res.data;
-  })
+  });
 };
 
 // This method is used to fetch the instance config
@@ -483,24 +516,20 @@ const getInstanceConfig = (clusterName, instanceName) => {
   const params = encodeURIComponent(`/${clusterName}/CONFIGS/PARTICIPANT/${instanceName}`);
   return zookeeperGetData(params).then((res) => {
     return res.data;
-  })
+  });
 };
 
-// This method is used to get tenants from tags using instance info
+// This method is used to get instance info
 // API: /instances/:instanceName
-// Expected Output: Unique array of tenants names
-const getTenantsFromInstance = (instanceName) => {
+const getInstanceDetails = (instanceName) => {
   return getInstance(instanceName).then((res)=>{
-    const tenantsList = [];
-    res.data.tags.forEach((tag) => {
-      if(tag.search('_BROKER') !== -1 ||
-        tag.search('_REALTIME') !== -1 ||
-        tag.search('_OFFLINE') !== -1
-      ){
-        tenantsList.push(tag.split('_')[0]);
-      }
-    });
-    return _.uniq(tenantsList);
+    return res.data;
+  });
+};
+
+const updateInstanceDetails = (instanceName, instanceDetails) => {
+  return putInstance(instanceName, instanceDetails).then((res)=>{
+    return res.data;
   })
 };
 
@@ -509,20 +538,20 @@ const getTenantsFromInstance = (instanceName) => {
 const getZookeeperData = (path, count) => {
   let counter = count;
   const newTreeData = [{
-    nodeId: ''+counter++,
+    nodeId: `${counter++}`,
     label: path,
     child: [],
     isLeafNode: false,
     hasChildRendered: true
-  }]
+  }];
   return getNodeData(path).then((obj)=>{
     const { currentNodeData, currentNodeMetadata, currentNodeListStat } = obj;
-    let pathNames = Object.keys(currentNodeListStat);
+    const pathNames = Object.keys(currentNodeListStat);
     pathNames.map((pathName)=>{
       newTreeData[0].child.push({
-        nodeId: ''+counter++,
+        nodeId: `${counter++}`,
         label: pathName,
-        fullPath: path === '/' ? path+pathName : path+'/'+pathName,
+        fullPath: path === '/' ? path+pathName : `${path}/${pathName}`,
         child: [],
         isLeafNode: currentNodeListStat[pathName].numChildren === 0,
         hasChildRendered: false
@@ -538,7 +567,7 @@ const getZookeeperData = (path, count) => {
 // API: /zk/get => Get node stats
 const getNodeData = (path) => {
   const params = encodeURIComponent(path);
-  let promiseArr = [
+  const promiseArr = [
     zookeeperGetData(params),
     zookeeperGetListWithStat(params),
     zookeeperGetStat(params)
@@ -548,11 +577,11 @@ const getNodeData = (path) => {
     const currentNodeListStat = results[1].data;
     const currentNodeMetadata = results[2].data;
 
-    if(currentNodeMetadata['ctime'] || currentNodeMetadata['mtime']){
-      currentNodeMetadata['ctime'] = moment(+currentNodeMetadata['ctime']).format(
+    if(currentNodeMetadata.ctime || currentNodeMetadata.mtime){
+      currentNodeMetadata.ctime = moment(+currentNodeMetadata.ctime).format(
         'MMMM Do YYYY, h:mm:ss'
       );
-      currentNodeMetadata['mtime'] = moment(+currentNodeMetadata['mtime']).format(
+      currentNodeMetadata.mtime = moment(+currentNodeMetadata.mtime).format(
         'MMMM Do YYYY, h:mm:ss'
       );
     }
@@ -576,13 +605,134 @@ const deleteNode = (path) => {
 
 const getBrokerOfTenant = (tenantName) => {
   return getBrokerListOfTenant(tenantName).then((response)=>{
-    return response.data;
+    return !response.data.error ? response.data : [];
   });
 };
 
 const getServerOfTenant = (tenantName) => {
   return getServerListOfTenant(tenantName).then((response)=>{
-    return response.data.ServerInstances;
+    return !response.data.error ? response.data.ServerInstances : [];
+  });
+};
+
+const updateTags = (instanceName, tagsList) => {
+  return updateInstanceTags(instanceName, tagsList.toString()).then((response)=>{
+    return response.data;
+  });
+};
+
+const toggleInstanceState = (instanceName, state) => {
+  return setInstanceState(instanceName, state).then((response)=>{
+    return response.data;
+  });
+};
+
+const toggleTableState = (tableName, state, tableType) => {
+  return setTableState(tableName, state, tableType).then((response)=>{
+    return response.data;
+  });
+};
+
+const deleteInstance = (instanceName) => {
+  return dropInstance(instanceName).then((response)=>{
+    return response.data;
+  });
+};
+
+const reloadSegmentOp = (tableName, segmentName) => {
+  return reloadSegment(tableName, segmentName).then((response)=>{
+    return response.data;
+  });
+};
+
+const reloadAllSegmentsOp = (tableName, tableType) => {
+  return reloadAllSegments(tableName, tableType).then((response)=>{
+    return response.data;
+  });
+};
+
+const reloadStatusOp = (tableName, tableType) => {
+  return reloadStatus(tableName, tableType).then((response)=>{
+    return response.data;
+  });
+}
+
+const deleteSegmentOp = (tableName, segmentName) => {
+  return deleteSegment(tableName, segmentName).then((response)=>{
+    return response.data;
+  });
+};
+
+const updateTable = (tableName: string, table: string) => {
+  return putTable(tableName, table).then((res)=>{
+    return res.data;
+  })
+};
+
+const updateSchema = (schemaName: string, schema: string) => {
+  return putSchema(schemaName, schema).then((res)=>{
+    return res.data;
+  })
+};
+
+const deleteTableOp = (tableName) => {
+  return deleteTable(tableName).then((response)=>{
+    return response.data;
+  });
+};
+
+const deleteSchemaOp = (tableName) => {
+  return deleteSchema(tableName).then((response)=>{
+    return response.data;
+  });
+};
+
+const rebalanceServersForTableOp = (tableName, queryParams) => {
+  const q_params = Utils.serialize(queryParams);
+  return rebalanceServersForTable(tableName, q_params).then((response)=>{
+    return  response.data;
+  });
+};
+
+const rebalanceBrokersForTableOp = (tableName) => {
+  return rebalanceBrokersForTable(tableName).then((response)=>{
+    return response.data;
+  });
+};
+
+const validateSchemaAction = (schemaObj) => {
+  return validateSchema(schemaObj).then((response)=>{
+    return response.data;
+  });
+};
+
+const validateTableAction = (tableObj) => {
+  return validateTable(tableObj).then((response)=>{
+    return response.data;
+  });
+};
+
+const saveSchemaAction = (schemaObj) => {
+  return saveSchema(schemaObj).then((response)=>{
+    return response.data;
+  });
+};
+
+const saveTableAction = (tableObj) => {
+  return saveTable(tableObj).then((response)=>{
+    return response.data;
+  });
+};
+
+const getSchemaData = (schemaName) => {
+  return getSchema(schemaName).then((response)=>{
+    return response.data;
+  });
+};
+
+const getTableState = (tableName, tableType) => {
+  return getState(tableName, tableType).then((response)=>{
+    return response.data;
   });
 };
 
@@ -595,6 +745,7 @@ export default {
   getTableSchemaData,
   getQueryResults,
   getTenantTableData,
+  getAllTableDetails,
   getTableSummaryData,
   getSegmentList,
   getTableDetails,
@@ -603,11 +754,33 @@ export default {
   getLiveInstance,
   getLiveInstanceConfig,
   getInstanceConfig,
-  getTenantsFromInstance,
+  getInstanceDetails,
+  updateInstanceDetails,
   getZookeeperData,
   getNodeData,
   putNodeData,
   deleteNode,
   getBrokerOfTenant,
-  getServerOfTenant
+  getServerOfTenant,
+  updateTags,
+  toggleInstanceState,
+  toggleTableState,
+  deleteInstance,
+  deleteSegmentOp,
+  reloadSegmentOp,
+  reloadStatusOp,
+  reloadAllSegmentsOp,
+  updateTable,
+  updateSchema,
+  deleteTableOp,
+  deleteSchemaOp,
+  rebalanceServersForTableOp,
+  rebalanceBrokersForTableOp,
+  validateSchemaAction,
+  validateTableAction,
+  saveSchemaAction,
+  saveTableAction,
+  getSchemaData,
+  getAllSchemaDetails,
+  getTableState
 };

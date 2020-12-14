@@ -25,39 +25,46 @@ import theme from './theme';
 import Layout from './components/Layout';
 import RouterData from './router';
 import PinotMethodUtils from './utils/PinotMethodUtils';
+import CustomNotification from './components/CustomNotification';
+import { NotificationContextProvider } from './components/Notification/NotificationContextProvider';
 
 const App = () => {
+  const [clusterName, setClusterName] = React.useState('');
   const fetchClusterName = async () => {
     const clusterNameResponse = await PinotMethodUtils.getClusterName();
     localStorage.setItem('pinot_ui:clusterName', clusterNameResponse);
+    setClusterName(clusterNameResponse);
   };
   React.useEffect(()=>{
     fetchClusterName();
   }, []);
   return (
     <MuiThemeProvider theme={theme}>
-      <Router>
-        <Switch>
-          {RouterData.map(({ path, Component }, key) => (
-            <Route
-              exact
-              path={path}
-              key={key}
-              render={props => {
-                return (
-                  <div className="p-8">
-                    <Layout {...props}>
-                      <Component {...props} />
-                    </Layout>
-                  </div>
-                );
-              }}
-            />
-          ))}
-        </Switch>
-      </Router>
+      <NotificationContextProvider>
+        <CustomNotification />
+        <Router>
+          <Switch>
+            {RouterData.map(({ path, Component }, key) => (
+              <Route
+                exact
+                path={path}
+                key={key}
+                render={props => {
+                  return (
+                    <div className="p-8">
+                      <Layout clusterName={clusterName} {...props}>
+                        <Component {...props} />
+                      </Layout>
+                    </div>
+                  );
+                }}
+              />
+            ))}
+          </Switch>
+        </Router>
+      </NotificationContextProvider>
     </MuiThemeProvider>
-  )
+  );
 };
 
 ReactDOM.render(<App />, document.getElementById('app'));

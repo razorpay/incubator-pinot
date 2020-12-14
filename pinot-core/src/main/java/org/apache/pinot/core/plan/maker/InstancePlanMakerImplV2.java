@@ -32,6 +32,7 @@ import org.apache.pinot.core.plan.AggregationGroupByPlanNode;
 import org.apache.pinot.core.plan.AggregationPlanNode;
 import org.apache.pinot.core.plan.CombinePlanNode;
 import org.apache.pinot.core.plan.DictionaryBasedAggregationPlanNode;
+import org.apache.pinot.core.plan.DistinctPlanNode;
 import org.apache.pinot.core.plan.GlobalPlanImplV0;
 import org.apache.pinot.core.plan.InstanceResponsePlanNode;
 import org.apache.pinot.core.plan.MetadataBasedAggregationPlanNode;
@@ -62,20 +63,28 @@ public class InstancePlanMakerImplV2 implements PlanMaker {
   public static final String NUM_GROUPS_LIMIT = "num.groups.limit";
   public static final int DEFAULT_NUM_GROUPS_LIMIT = 100_000;
 
+  // set as pinot.server.query.executor.groupby.trim.threshold
+  public static final String GROUPBY_TRIM_THRESHOLD = "groupby.trim.threshold";
+  public static final int DEFAULT_GROUPBY_TRIM_THRESHOLD = 1_000_000;
+
   private final int _maxInitialResultHolderCapacity;
   // Limit on number of groups stored for each segment, beyond which no new group will be created
   private final int _numGroupsLimit;
+  // Used for SQL GROUP BY (server combine)
+  private final int _groupByTrimThreshold;
 
   @VisibleForTesting
   public InstancePlanMakerImplV2() {
     _maxInitialResultHolderCapacity = DEFAULT_MAX_INITIAL_RESULT_HOLDER_CAPACITY;
     _numGroupsLimit = DEFAULT_NUM_GROUPS_LIMIT;
+    _groupByTrimThreshold = DEFAULT_GROUPBY_TRIM_THRESHOLD;
   }
 
   @VisibleForTesting
   public InstancePlanMakerImplV2(int maxInitialResultHolderCapacity, int numGroupsLimit) {
     _maxInitialResultHolderCapacity = maxInitialResultHolderCapacity;
     _numGroupsLimit = numGroupsLimit;
+    _groupByTrimThreshold = DEFAULT_GROUPBY_TRIM_THRESHOLD;
   }
 
   /**
@@ -91,6 +100,8 @@ public class InstancePlanMakerImplV2 implements PlanMaker {
     _maxInitialResultHolderCapacity = queryExecutorConfig.getConfig()
         .getProperty(MAX_INITIAL_RESULT_HOLDER_CAPACITY_KEY, DEFAULT_MAX_INITIAL_RESULT_HOLDER_CAPACITY);
     _numGroupsLimit = queryExecutorConfig.getConfig().getProperty(NUM_GROUPS_LIMIT, DEFAULT_NUM_GROUPS_LIMIT);
+    _groupByTrimThreshold =
+        queryExecutorConfig.getConfig().getProperty(GROUPBY_TRIM_THRESHOLD, DEFAULT_GROUPBY_TRIM_THRESHOLD);
     Preconditions.checkState(_maxInitialResultHolderCapacity <= _numGroupsLimit,
         "Invalid configuration: maxInitialResultHolderCapacity: %d must be smaller or equal to numGroupsLimit: %d",
         _maxInitialResultHolderCapacity, _numGroupsLimit);
@@ -106,14 +117,14 @@ public class InstancePlanMakerImplV2 implements PlanMaker {
       planNodes.add(makeSegmentPlanNode(indexSegment, queryContext));
     }
     CombinePlanNode combinePlanNode =
-        new CombinePlanNode(planNodes, queryContext, executorService, endTimeMs, _numGroupsLimit, null);
+        new CombinePlanNode(planNodes, queryContext, executorService, endTimeMs, _numGroupsLimit, null,
+            _groupByTrimThreshold);
     return new GlobalPlanImplV0(new InstanceResponsePlanNode(combinePlanNode));
   }
 
   @Override
   public PlanNode makeSegmentPlanNode(IndexSegment indexSegment, QueryContext queryContext) {
     if (QueryContextUtils.isAggregationQuery(queryContext)) {
-      // Aggregation query
       List<ExpressionContext> groupByExpressions = queryContext.getGroupByExpressions();
       if (groupByExpressions != null) {
         // Aggregation group-by query
@@ -139,9 +150,11 @@ public class InstancePlanMakerImplV2 implements PlanMaker {
         }
         return new AggregationPlanNode(indexSegment, queryContext);
       }
-    } else {
-      // Selection query
+    } else if (QueryContextUtils.isSelectionQuery(queryContext)) {
       return new SelectionPlanNode(indexSegment, queryContext);
+    } else {
+      assert QueryContextUtils.isDistinctQuery(queryContext);
+      return new DistinctPlanNode(indexSegment, queryContext);
     }
   }
 
@@ -153,14 +166,15 @@ public class InstancePlanMakerImplV2 implements PlanMaker {
       planNodes.add(makeStreamingSegmentPlanNode(indexSegment, queryContext));
     }
     CombinePlanNode combinePlanNode =
-        new CombinePlanNode(planNodes, queryContext, executorService, endTimeMs, _numGroupsLimit, streamObserver);
+        new CombinePlanNode(planNodes, queryContext, executorService, endTimeMs, _numGroupsLimit, streamObserver,
+            _groupByTrimThreshold);
     return new GlobalPlanImplV0(new InstanceResponsePlanNode(combinePlanNode));
   }
 
   @Override
   public PlanNode makeStreamingSegmentPlanNode(IndexSegment indexSegment, QueryContext queryContext) {
-    if (QueryContextUtils.isAggregationQuery(queryContext)) {
-      throw new UnsupportedOperationException("Queries with aggregations are not supported");
+    if (!QueryContextUtils.isSelectionQuery(queryContext)) {
+      throw new UnsupportedOperationException("Only selection queries are supported");
     } else {
       // Selection query
       return new StreamingSelectionPlanNode(indexSegment, queryContext);

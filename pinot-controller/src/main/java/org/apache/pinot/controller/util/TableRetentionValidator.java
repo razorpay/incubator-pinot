@@ -34,6 +34,7 @@ import org.apache.pinot.common.metadata.segment.OfflineSegmentZKMetadata;
 import org.apache.pinot.common.utils.config.TableConfigUtils;
 import org.apache.pinot.spi.config.table.SegmentsValidationAndRetentionConfig;
 import org.apache.pinot.spi.config.table.TableConfig;
+import org.apache.pinot.spi.utils.IngestionConfigUtils;
 import org.apache.pinot.spi.utils.TimeUtils;
 import org.apache.pinot.spi.utils.builder.TableNameBuilder;
 import org.slf4j.Logger;
@@ -102,12 +103,13 @@ public class TableRetentionValidator {
       }
 
       // Get the retention config
-      SegmentsValidationAndRetentionConfig retentionConfig = getTableConfig(tableName).getValidationConfig();
+      TableConfig tableConfig = getTableConfig(tableName);
+      SegmentsValidationAndRetentionConfig retentionConfig = tableConfig.getValidationConfig();
       if (retentionConfig == null) {
         LOGGER.error("Table: {}, \"segmentsConfig\" field is missing in table config", tableName);
         continue;
       }
-      String segmentPushType = retentionConfig.getSegmentPushType();
+      String segmentPushType = IngestionConfigUtils.getBatchSegmentIngestionType(tableConfig);
       if (segmentPushType == null) {
         LOGGER.error("Table: {}, null push type", tableName);
         continue;
@@ -162,18 +164,13 @@ public class TableRetentionValidator {
       List<String> errorMessages = new ArrayList<>();
       for (String segmentName : segmentNames) {
         OfflineSegmentZKMetadata offlineSegmentMetadata = getOfflineSegmentMetadata(tableName, segmentName);
-        TimeUnit segmentTimeUnit = offlineSegmentMetadata.getTimeUnit();
-        if (segmentTimeUnit == null) {
-          errorMessages.add("Segment: " + segmentName + " has null time unit");
-          continue;
+        long startTimeMs = offlineSegmentMetadata.getStartTimeMs();
+        if (!TimeUtils.timeValueInValidRange(startTimeMs)) {
+          errorMessages.add("Segment: " + segmentName + " has invalid start time in millis: " + startTimeMs);
         }
-        long startTimeInMillis = segmentTimeUnit.toMillis(offlineSegmentMetadata.getStartTime());
-        if (!TimeUtils.timeValueInValidRange(startTimeInMillis)) {
-          errorMessages.add("Segment: " + segmentName + " has invalid start time in millis: " + startTimeInMillis);
-        }
-        long endTimeInMillis = segmentTimeUnit.toMillis(offlineSegmentMetadata.getEndTime());
-        if (!TimeUtils.timeValueInValidRange(endTimeInMillis)) {
-          errorMessages.add("Segment: " + segmentName + " has invalid end time in millis: " + endTimeInMillis);
+        long endTimeMs = offlineSegmentMetadata.getEndTimeMs();
+        if (!TimeUtils.timeValueInValidRange(endTimeMs)) {
+          errorMessages.add("Segment: " + segmentName + " has invalid end time in millis: " + endTimeMs);
         }
       }
 

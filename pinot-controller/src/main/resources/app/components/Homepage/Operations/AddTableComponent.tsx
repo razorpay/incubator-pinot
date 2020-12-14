@@ -18,7 +18,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { createStyles, FormControl, Grid, Input, InputLabel, makeStyles, MenuItem, Select, TextField, Theme} from '@material-ui/core';
+import { createStyles, FormControl, Grid, Input, InputLabel, makeStyles, MenuItem, Select, TextField, Theme, Tooltip} from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -46,12 +46,14 @@ type Props = {
   tableObj: any,
   setTableObj: Function,
   dateTimeFieldSpecs: Array<any>
+  disable:boolean
 };
 
 export default function AddTableComponent({
   tableObj,
   setTableObj,
-  dateTimeFieldSpecs
+  dateTimeFieldSpecs,
+  disable
 }: Props) {
   const classes = useStyles();
 
@@ -130,12 +132,13 @@ export default function AddTableComponent({
             id="tableType"
             value={tableDataObj.tableType}
             onChange={(e)=> changeHandler('tableType', e.target.value)}
+            disabled={disable}
           >
             <MenuItem value="OFFLINE">OFFLINE</MenuItem>
             <MenuItem value="REALTIME">REALTIME</MenuItem>
           </Select>
         </FormControl>
-
+        <Tooltip title="Pick a primary time column from all the DateTime columns" arrow placement="top-start">
         <FormControl className={classes.selectFormControl}>
           <Autocomplete
             className={classes.autoCompleteControl}
@@ -153,9 +156,10 @@ export default function AddTableComponent({
             )}
           />
         </FormControl>
-
+        </Tooltip>
+        <Tooltip title="Number of copies to create per segment" arrow placement="top-start">
         <FormControl className={classes.selectFormControl}>
-          <InputLabel htmlFor="replication">Replication {requiredAstrix}</InputLabel>
+          <InputLabel htmlFor="replication">Replication</InputLabel>
           <Select
             labelId="replication"
             id="replication"
@@ -165,6 +169,7 @@ export default function AddTableComponent({
             {[ ...Array(20).keys() ].map((num, index)=>(<MenuItem key={index} value={`${num+1}`}>{`${num+1}`}</MenuItem>))}
           </Select>
         </FormControl>
+        </Tooltip>
       </Grid>
     </Grid>
   );

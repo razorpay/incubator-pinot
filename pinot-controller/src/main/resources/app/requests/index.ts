@@ -45,6 +45,9 @@ export const getTenantTableDetails = (tableName: string): Promise<AxiosResponse<
 export const putTable = (name: string, params: string): Promise<AxiosResponse<OperationResponse>> =>
   baseApi.put(`/tables/${name}`, params, { headers });
 
+export const getSchemaList = (): Promise<AxiosResponse<OperationResponse>> =>
+  baseApi.get(`/schemas`);
+
 export const getSchema = (name: string): Promise<AxiosResponse<OperationResponse>> =>
   baseApi.get(`/schemas/${name}`);
 
@@ -158,3 +161,6 @@ export const saveSchema = (schemaObject: string): Promise<AxiosResponse<Operatio
 
 export const saveTable = (tableObject: string): Promise<AxiosResponse<OperationResponse>> =>
   baseApi.post(`/tables`, JSON.stringify(tableObject), {headers});
+
+export const getState = (tableName: string, tableType: string): Promise<AxiosResponse<OperationResponse>> =>
+  baseApi.get(`/tables/${tableName}/state?type=${tableType}`);

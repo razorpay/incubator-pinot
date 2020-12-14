@@ -28,7 +28,7 @@ import java.util.Map;
 import org.apache.helix.ZNRecord;
 import org.apache.pinot.spi.config.table.FieldConfig;
 import org.apache.pinot.spi.config.table.IndexingConfig;
-import org.apache.pinot.spi.config.table.IngestionConfig;
+import org.apache.pinot.spi.config.table.ingestion.IngestionConfig;
 import org.apache.pinot.spi.config.table.QueryConfig;
 import org.apache.pinot.spi.config.table.QuotaConfig;
 import org.apache.pinot.spi.config.table.RoutingConfig;
@@ -38,6 +38,7 @@ import org.apache.pinot.spi.config.table.TableCustomConfig;
 import org.apache.pinot.spi.config.table.TableTaskConfig;
 import org.apache.pinot.spi.config.table.TenantConfig;
 import org.apache.pinot.spi.config.table.TierConfig;
+import org.apache.pinot.spi.config.table.TunerConfig;
 import org.apache.pinot.spi.config.table.UpsertConfig;
 import org.apache.pinot.spi.config.table.assignment.InstanceAssignmentConfig;
 import org.apache.pinot.spi.config.table.assignment.InstancePartitionsType;
@@ -58,6 +59,7 @@ public class TableConfigUtils {
     String tableName = znRecord.getId();
 
     String tableType = simpleFields.get(TableConfig.TABLE_TYPE_KEY);
+    boolean isDimTable = Boolean.parseBoolean(simpleFields.get(TableConfig.IS_DIM_TABLE_KEY));
     Preconditions.checkState(tableType != null, FIELD_MISSING_MESSAGE_TEMPLATE, TableConfig.TABLE_TYPE_KEY);
 
     String validationConfigString = simpleFields.get(TableConfig.VALIDATION_CONFIG_KEY);
@@ -138,9 +140,15 @@ public class TableConfigUtils {
       });
     }
 
+    TunerConfig tunerConfig = null;
+    String tunerConfigString = simpleFields.get(TableConfig.TUNER_CONFIG);
+    if (tunerConfigString != null) {
+      tunerConfig = JsonUtils.stringToObject(tunerConfigString, TunerConfig.class);
+    }
+
     return new TableConfig(tableName, tableType, validationConfig, tenantConfig, indexingConfig, customConfig,
         quotaConfig, taskConfig, routingConfig, queryConfig, instanceAssignmentConfigMap, fieldConfigList, upsertConfig,
-        ingestionConfig, tierConfigList);
+        ingestionConfig, tierConfigList, isDimTable, tunerConfig);
   }
 
   public static ZNRecord toZNRecord(TableConfig tableConfig)
@@ -154,6 +162,7 @@ public class TableConfigUtils {
     simpleFields.put(TableConfig.TENANT_CONFIG_KEY, tableConfig.getTenantConfig().toJsonString());
     simpleFields.put(TableConfig.INDEXING_CONFIG_KEY, tableConfig.getIndexingConfig().toJsonString());
     simpleFields.put(TableConfig.CUSTOM_CONFIG_KEY, tableConfig.getCustomConfig().toJsonString());
+    simpleFields.put(TableConfig.IS_DIM_TABLE_KEY, Boolean.toString(tableConfig.isDimTable()));
 
     // Optional fields
     QuotaConfig quotaConfig = tableConfig.getQuotaConfig();
@@ -193,6 +202,10 @@ public class TableConfigUtils {
     List<TierConfig> tierConfigList = tableConfig.getTierConfigsList();
     if (tierConfigList != null) {
       simpleFields.put(TableConfig.TIER_CONFIGS_LIST_KEY, JsonUtils.objectToString(tierConfigList));
+    }
+    TunerConfig tunerConfig = tableConfig.getTunerConfig();
+    if (tunerConfig != null) {
+      simpleFields.put(TableConfig.TUNER_CONFIG, JsonUtils.objectToString(tunerConfig));
     }
 
     ZNRecord znRecord = new ZNRecord(tableConfig.getTableName());

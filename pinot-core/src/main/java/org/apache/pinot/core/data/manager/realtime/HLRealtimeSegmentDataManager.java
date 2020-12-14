@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +57,7 @@ import org.apache.pinot.spi.stream.StreamConfig;
 import org.apache.pinot.spi.stream.StreamConsumerFactory;
 import org.apache.pinot.spi.stream.StreamConsumerFactoryProvider;
 import org.apache.pinot.spi.stream.StreamLevelConsumer;
+import org.apache.pinot.spi.utils.IngestionConfigUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -155,7 +157,7 @@ public class HLRealtimeSegmentDataManager extends RealtimeSegmentDataManager {
 
     _varLengthDictionaryColumns = new ArrayList<>(indexLoadingConfig.getVarLengthDictionaryColumns());
 
-    _streamConfig = new StreamConfig(_tableNameWithType, tableConfig.getIndexingConfig().getStreamConfigs());
+    _streamConfig = new StreamConfig(_tableNameWithType, IngestionConfigUtils.getStreamConfigMap(tableConfig));
 
     _segmentLogger = LoggerFactory.getLogger(
         HLRealtimeSegmentDataManager.class.getName() + "_" + _segmentName + "_" + _streamConfig.getTopicName());
@@ -413,6 +415,21 @@ public class HLRealtimeSegmentDataManager extends RealtimeSegmentDataManager {
   @Override
   public MutableSegment getSegment() {
     return _realtimeSegment;
+  }
+
+  @Override
+  public Map<String, String> getPartitionToCurrentOffset() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public ConsumerState getConsumerState() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public long getLastConsumedTimestamp() {
+    throw new UnsupportedOperationException();
   }
 
   @Override

@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import org.apache.pinot.spi.config.BaseJsonConfig;
 import org.apache.pinot.spi.config.table.assignment.InstanceAssignmentConfig;
 import org.apache.pinot.spi.config.table.assignment.InstancePartitionsType;
+import org.apache.pinot.spi.config.table.ingestion.IngestionConfig;
 import org.apache.pinot.spi.utils.builder.TableNameBuilder;
 
 
@@ -36,6 +37,7 @@ import org.apache.pinot.spi.utils.builder.TableNameBuilder;
 public class TableConfig extends BaseJsonConfig {
   public static final String TABLE_NAME_KEY = "tableName";
   public static final String TABLE_TYPE_KEY = "tableType";
+  public static final String IS_DIM_TABLE_KEY = "isDimTable";
   public static final String VALIDATION_CONFIG_KEY = "segmentsConfig";
   public static final String TENANT_CONFIG_KEY = "tenants";
   public static final String INDEXING_CONFIG_KEY = "tableIndexConfig";
@@ -49,6 +51,7 @@ public class TableConfig extends BaseJsonConfig {
   public static final String UPSERT_CONFIG_KEY = "upsertConfig";
   public static final String INGESTION_CONFIG_KEY = "ingestionConfig";
   public static final String TIER_CONFIGS_LIST_KEY = "tierConfigs";
+  public static final String TUNER_CONFIG = "tunerConfig";
 
   // Double underscore is reserved for real-time segment name delimiter
   private static final String TABLE_NAME_FORBIDDEN_SUBSTRING = "__";
@@ -60,6 +63,9 @@ public class TableConfig extends BaseJsonConfig {
 
   @JsonPropertyDescription(value = "The type of the table (OFFLINE|REALTIME) (mandatory)")
   private final TableType _tableType;
+
+  @JsonPropertyDescription("Indicates whether the table is a dimension table or not")
+  private final boolean _dimTable;
 
   private SegmentsValidationAndRetentionConfig _validationConfig;
   private TenantConfig _tenantConfig;
@@ -88,6 +94,9 @@ public class TableConfig extends BaseJsonConfig {
   @JsonPropertyDescription(value = "Configs for tiers of storage")
   private List<TierConfig> _tierConfigsList;
 
+  @JsonPropertyDescription(value = "Configs for Table config tuner")
+  private TunerConfig _tunerConfig;
+
   @JsonCreator
   public TableConfig(@JsonProperty(value = TABLE_NAME_KEY, required = true) String tableName,
       @JsonProperty(value = TABLE_TYPE_KEY, required = true) String tableType,
@@ -103,7 +112,9 @@ public class TableConfig extends BaseJsonConfig {
       @JsonProperty(FIELD_CONFIG_LIST_KEY) @Nullable List<FieldConfig> fieldConfigList,
       @JsonProperty(UPSERT_CONFIG_KEY) @Nullable UpsertConfig upsertConfig,
       @JsonProperty(INGESTION_CONFIG_KEY) @Nullable IngestionConfig ingestionConfig,
-      @JsonProperty(TIER_CONFIGS_LIST_KEY) @Nullable List<TierConfig> tierConfigsList) {
+      @JsonProperty(TIER_CONFIGS_LIST_KEY) @Nullable List<TierConfig> tierConfigsList,
+      @JsonProperty(IS_DIM_TABLE_KEY) boolean dimTable,
+      @JsonProperty(TUNER_CONFIG) @Nullable TunerConfig tunerConfig) {
     Preconditions.checkArgument(tableName != null, "'tableName' must be configured");
     Preconditions.checkArgument(!tableName.contains(TABLE_NAME_FORBIDDEN_SUBSTRING),
         "'tableName' cannot contain double underscore ('__')");
@@ -129,6 +140,8 @@ public class TableConfig extends BaseJsonConfig {
     _upsertConfig = upsertConfig;
     _ingestionConfig = ingestionConfig;
     _tierConfigsList = tierConfigsList;
+    _dimTable = dimTable;
+    _tunerConfig = tunerConfig;
   }
 
   @JsonProperty(TABLE_NAME_KEY)
@@ -139,6 +152,11 @@ public class TableConfig extends BaseJsonConfig {
   @JsonProperty(TABLE_TYPE_KEY)
   public TableType getTableType() {
     return _tableType;
+  }
+
+  @JsonProperty(IS_DIM_TABLE_KEY)
+  public boolean isDimTable() {
+    return _dimTable;
   }
 
   @JsonProperty(VALIDATION_CONFIG_KEY)
@@ -270,5 +288,10 @@ public class TableConfig extends BaseJsonConfig {
   @JsonIgnore
   public UpsertConfig.Mode getUpsertMode() {
     return _upsertConfig == null ? UpsertConfig.Mode.NONE : _upsertConfig.getMode();
+  }
+
+  @JsonProperty(TUNER_CONFIG)
+  public TunerConfig getTunerConfig() {
+    return _tunerConfig;
   }
 }

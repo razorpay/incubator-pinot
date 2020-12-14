@@ -47,12 +47,14 @@ import org.apache.pinot.plugin.ingestion.batch.common.SegmentGenerationUtils;
 import org.apache.pinot.spi.env.PinotConfiguration;
 import org.apache.pinot.spi.filesystem.PinotFS;
 import org.apache.pinot.spi.filesystem.PinotFSFactory;
+import org.apache.pinot.spi.ingestion.batch.BatchConfigProperties;
 import org.apache.pinot.spi.ingestion.batch.runner.IngestionJobRunner;
 import org.apache.pinot.spi.ingestion.batch.spec.Constants;
 import org.apache.pinot.spi.ingestion.batch.spec.PinotClusterSpec;
 import org.apache.pinot.spi.ingestion.batch.spec.PinotFSSpec;
 import org.apache.pinot.spi.ingestion.batch.spec.SegmentGenerationJobSpec;
 import org.apache.pinot.spi.ingestion.batch.spec.SegmentGenerationTaskSpec;
+import org.apache.pinot.spi.ingestion.batch.spec.SegmentNameGeneratorSpec;
 import org.apache.pinot.spi.plugin.PluginManager;
 import org.apache.pinot.spi.utils.DataSizeUtils;
 import org.apache.spark.SparkContext;
@@ -205,13 +207,7 @@ public class SparkSegmentGenerationJobRunner implements IngestionJobRunner, Seri
       }
 
       List<String> pathAndIdxList = new ArrayList<>();
-      String localDirectorySequenceIdString =
-          _spec.getSegmentNameGeneratorSpec().getConfigs().get(LOCAL_DIRECTORY_SEQUENCE_ID);
-      boolean localDirectorySequenceId = false;
-      if (localDirectorySequenceIdString != null) {
-        localDirectorySequenceId = Boolean.parseBoolean(localDirectorySequenceIdString);
-      }
-      if (localDirectorySequenceId) {
+      if (getLocalDirectorySequenceId(_spec.getSegmentNameGeneratorSpec())) {
         Map<String, List<String>> localDirIndex = new HashMap<>();
         for (String filteredFile : filteredFiles) {
           Path filteredParentPath = Paths.get(filteredFile).getParent();
@@ -308,6 +304,7 @@ public class SparkSegmentGenerationJobRunner implements IngestionJobRunner, Seri
               SegmentGenerationUtils.getTableConfig(_spec.getTableSpec().getTableConfigURI()).toJsonNode());
           taskSpec.setSequenceId(idx);
           taskSpec.setSegmentNameGeneratorSpec(_spec.getSegmentNameGeneratorSpec());
+          taskSpec.setCustomProperty(BatchConfigProperties.INPUT_DATA_FILE_URI_KEY, inputFileURI.toString());
 
           SegmentGenerationTaskRunner taskRunner = new SegmentGenerationTaskRunner(taskSpec);
           String segmentName = taskRunner.run();
@@ -350,6 +347,13 @@ public class SparkSegmentGenerationJobRunner implements IngestionJobRunner, Seri
         outputDirFS.delete(stagingDirURI, true);
       }
     }
+  }
+
+  private static boolean getLocalDirectorySequenceId(SegmentNameGeneratorSpec spec) {
+    if (spec == null || spec.getConfigs() == null) {
+      return false;
+    }
+    return Boolean.parseBoolean(spec.getConfigs().get(LOCAL_DIRECTORY_SEQUENCE_ID));
   }
 
   protected void addDepsJarToDistributedCache(JavaSparkContext sparkContext, String depsJarDir)

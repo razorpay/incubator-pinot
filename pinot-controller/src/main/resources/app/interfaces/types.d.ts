@@ -21,6 +21,15 @@ declare module 'Models' {
   export type TableData = {
     records: Array<Array<string | number | boolean>>;
     columns: Array<string>;
+    error?: string;
+  };
+
+  type SchemaDetails = {
+    schemaName: string,
+    totalColumns: number,
+    dimensions: number,
+    metrics: number,
+    dateTime: number
   };
 
   export type Tenants = {
@@ -77,6 +86,7 @@ declare module 'Models' {
     dimensionFieldSpecs: Array<schema>;
     metricFieldSpecs?: Array<schema>;
     dateTimeFieldSpecs?: Array<schema>;
+    error?: string;
   };
 
   type schema = {
@@ -111,21 +121,28 @@ declare module 'Models' {
 
   export type ClusterName = {
     clusterName: string
-  }
+  };
 
-  export type ZKGetList = Array<string>
+  export type ZKGetList = Array<string>;
 
-  export type ZKConfig = Object;
-  export type ZKOperationResponsne = any;
+  export type ZKConfig = {
+    ctime: any,
+    mtime: any
+  };
+  export type OperationResponse = any;
 
   export type DataTable = {
     [name: string]: Array<string>
   };
 
-  export type BrokerList = Array<string>;
+  export type BrokerList = {
+    error?: string,
+    Array
+  };
 
   export type ServerList = {
     ServerInstances: Array<string>,
-    tenantName: string
+    tenantName: string,
+    error: string
   }
 }

@@ -33,6 +33,7 @@ import org.apache.pinot.controller.util.SegmentIntervalUtils;
 import org.apache.pinot.spi.config.table.SegmentsValidationAndRetentionConfig;
 import org.apache.pinot.spi.config.table.TableConfig;
 import org.apache.pinot.spi.config.table.TableType;
+import org.apache.pinot.spi.utils.IngestionConfigUtils;
 import org.apache.pinot.spi.utils.TimeUtils;
 import org.apache.pinot.spi.utils.builder.TableNameBuilder;
 import org.joda.time.Duration;
@@ -88,9 +89,10 @@ public class OfflineSegmentIntervalChecker extends ControllerPeriodicTask<Void> 
       List<Interval> segmentIntervals = new ArrayList<>(numSegments);
       int numSegmentsWithInvalidIntervals = 0;
       for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : offlineSegmentZKMetadataList) {
-        Interval timeInterval = offlineSegmentZKMetadata.getTimeInterval();
-        if (timeInterval != null && TimeUtils.isValidTimeInterval(timeInterval)) {
-          segmentIntervals.add(timeInterval);
+        long startTimeMs = offlineSegmentZKMetadata.getStartTimeMs();
+        long endTimeMs = offlineSegmentZKMetadata.getEndTimeMs();
+        if (TimeUtils.timeValueInValidRange(startTimeMs) && TimeUtils.timeValueInValidRange(endTimeMs)) {
+          segmentIntervals.add(new Interval(startTimeMs, endTimeMs));
         } else {
           numSegmentsWithInvalidIntervals++;
         }
@@ -99,7 +101,8 @@ public class OfflineSegmentIntervalChecker extends ControllerPeriodicTask<Void> 
         LOGGER
             .warn("Table: {} has {} segments with invalid interval", offlineTableName, numSegmentsWithInvalidIntervals);
       }
-      Duration frequency = SegmentIntervalUtils.convertToDuration(validationConfig.getSegmentPushFrequency());
+      Duration frequency =
+          SegmentIntervalUtils.convertToDuration(IngestionConfigUtils.getBatchSegmentIngestionFrequency(tableConfig));
       numMissingSegments = computeNumMissingSegments(segmentIntervals, frequency);
     }
     // Update the gauge that contains the number of missing segments
@@ -110,10 +113,9 @@ public class OfflineSegmentIntervalChecker extends ControllerPeriodicTask<Void> 
     long maxSegmentPushTime = Long.MIN_VALUE;
 
     for (OfflineSegmentZKMetadata offlineSegmentZKMetadata : offlineSegmentZKMetadataList) {
-      Interval segmentInterval = offlineSegmentZKMetadata.getTimeInterval();
-
-      if (segmentInterval != null && maxSegmentEndTime < segmentInterval.getEndMillis()) {
-        maxSegmentEndTime = segmentInterval.getEndMillis();
+      long endTimeMs = offlineSegmentZKMetadata.getEndTimeMs();
+      if (TimeUtils.timeValueInValidRange(endTimeMs) && maxSegmentEndTime < endTimeMs) {
+        maxSegmentEndTime = endTimeMs;
       }
 
       long segmentPushTime = offlineSegmentZKMetadata.getPushTime();

@@ -25,7 +25,7 @@ import java.util.Map;
 import org.apache.pinot.spi.config.table.CompletionConfig;
 import org.apache.pinot.spi.config.table.FieldConfig;
 import org.apache.pinot.spi.config.table.IndexingConfig;
-import org.apache.pinot.spi.config.table.IngestionConfig;
+import org.apache.pinot.spi.config.table.ingestion.IngestionConfig;
 import org.apache.pinot.spi.config.table.QueryConfig;
 import org.apache.pinot.spi.config.table.QuotaConfig;
 import org.apache.pinot.spi.config.table.ReplicaGroupStrategyConfig;
@@ -40,6 +40,7 @@ import org.apache.pinot.spi.config.table.TableType;
 import org.apache.pinot.spi.config.table.TagOverrideConfig;
 import org.apache.pinot.spi.config.table.TenantConfig;
 import org.apache.pinot.spi.config.table.TierConfig;
+import org.apache.pinot.spi.config.table.TunerConfig;
 import org.apache.pinot.spi.config.table.UpsertConfig;
 import org.apache.pinot.spi.config.table.assignment.InstanceAssignmentConfig;
 import org.apache.pinot.spi.config.table.assignment.InstancePartitionsType;
@@ -55,6 +56,7 @@ public class TableConfigBuilder {
 
   private final TableType _tableType;
   private String _tableName;
+  private boolean _isDimTable;
   private boolean _isLLC;
 
   // Segments config related
@@ -104,6 +106,7 @@ public class TableConfigBuilder {
   private UpsertConfig _upsertConfig;
   private IngestionConfig _ingestionConfig;
   private List<TierConfig> _tierConfigList;
+  private TunerConfig _tunerConfig;
 
   public TableConfigBuilder(TableType tableType) {
     _tableType = tableType;
@@ -111,6 +114,11 @@ public class TableConfigBuilder {
 
   public TableConfigBuilder setTableName(String tableName) {
     _tableName = tableName;
+    return this;
+  }
+
+  public TableConfigBuilder setIsDimTable(boolean isDimTable) {
+    _isDimTable = isDimTable;
     return this;
   }
 
@@ -332,6 +340,11 @@ public class TableConfigBuilder {
     return this;
   }
 
+  public TableConfigBuilder setTunerConfig(TunerConfig tunerConfig) {
+    _tunerConfig = tunerConfig;
+    return this;
+  }
+
   public TableConfig build() {
     // Validation config
     SegmentsValidationAndRetentionConfig validationConfig = new SegmentsValidationAndRetentionConfig();
@@ -380,6 +393,6 @@ public class TableConfigBuilder {
 
     return new TableConfig(_tableName, _tableType.toString(), validationConfig, tenantConfig, indexingConfig,
         _customConfig, _quotaConfig, _taskConfig, _routingConfig, _queryConfig, _instanceAssignmentConfigMap,
-        _fieldConfigList, _upsertConfig, _ingestionConfig, _tierConfigList);
+        _fieldConfigList, _upsertConfig, _ingestionConfig, _tierConfigList, _isDimTable, _tunerConfig);
   }
 }

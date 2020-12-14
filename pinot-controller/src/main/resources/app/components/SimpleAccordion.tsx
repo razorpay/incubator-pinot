@@ -25,6 +25,7 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import SearchBar from './SearchBar';
+import { FormControlLabel, Switch, Tooltip } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -33,7 +34,8 @@ const useStyles = makeStyles((theme: Theme) =>
       borderBottom: '1px #BDCCD9 solid',
       minHeight: '0 !important',
       '& .MuiAccordionSummary-content.Mui-expanded':{
-        margin: 0
+        margin: 0,
+        alignItems: 'center',
       }
     },
     heading: {
@@ -45,26 +47,39 @@ const useStyles = makeStyles((theme: Theme) =>
     details: {
       flexDirection: 'column',
       padding: '0'
+    },
+    formControl: {
+      marginRight: 0,
+      marginLeft: 'auto',
+      zoom: 0.85
     }
   }),
 );
 
 type Props = {
   headerTitle: string;
+  tooltipContent?: any;
   showSearchBox: boolean;
   searchValue?: string;
   handleSearch?: Function;
-  recordCount?: number
+  recordCount?: number;
   children: any;
+  accordionToggleObject?: {
+    toggleChangeHandler: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    toggleName: string;
+    toggleValue: boolean;
+  }
 };
 
 export default function SimpleAccordion({
   headerTitle,
+  tooltipContent,
   showSearchBox,
   searchValue,
   handleSearch,
   recordCount,
-  children
+  children,
+  accordionToggleObject
 }: Props) {
   const classes = useStyles();
 
@@ -78,7 +93,27 @@ export default function SimpleAccordion({
         id={`panel1a-header-${headerTitle}`}
         className={classes.root}
       >
-        <Typography className={classes.heading}>{`${headerTitle.toUpperCase()} ${recordCount !== undefined ? ` - (${recordCount})` : ''}`}</Typography>
+        {tooltipContent ?
+          <Tooltip interactive title={tooltipContent} arrow placement="top">
+            <Typography className={classes.heading}>{`${headerTitle.toUpperCase()} ${recordCount !== undefined ? ` - (${recordCount})` : ''}`}</Typography>
+          </Tooltip>
+        :
+          <Typography className={classes.heading}>{`${headerTitle.toUpperCase()} ${recordCount !== undefined ? ` - (${recordCount})` : ''}`}</Typography>
+        }
+        {accordionToggleObject &&
+          <FormControlLabel
+            className={classes.formControl}
+            control={
+              <Switch
+                checked={accordionToggleObject.toggleValue}
+                onChange={accordionToggleObject.toggleChangeHandler} 
+                name={accordionToggleObject.toggleName}
+                color="primary"
+              />
+            }
+            label={accordionToggleObject.toggleName}
+          />
+        }
       </AccordionSummary>
       <AccordionDetails className={classes.details}>
         {showSearchBox ?
@@ -87,8 +122,7 @@ export default function SimpleAccordion({
             value={searchValue}
             onChange={(e) => handleSearch(e.target.value)}
           />
-          : null
-        }
+          : null}
         {children}
       </AccordionDetails>
     </Accordion>

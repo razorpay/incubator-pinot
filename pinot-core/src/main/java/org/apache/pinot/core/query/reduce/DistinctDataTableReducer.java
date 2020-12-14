@@ -33,7 +33,7 @@ import org.apache.pinot.common.utils.DataSchema;
 import org.apache.pinot.common.utils.DataTable;
 import org.apache.pinot.core.data.table.Record;
 import org.apache.pinot.core.query.aggregation.function.DistinctAggregationFunction;
-import org.apache.pinot.core.query.aggregation.function.customobject.DistinctTable;
+import org.apache.pinot.core.query.distinct.DistinctTable;
 import org.apache.pinot.core.query.request.context.QueryContext;
 import org.apache.pinot.core.query.selection.SelectionOperatorUtils;
 import org.apache.pinot.core.transport.ServerRoutingInstance;
@@ -61,7 +61,7 @@ public class DistinctDataTableReducer implements DataTableReducer {
   @Override
   public void reduceAndSetResults(String tableName, DataSchema dataSchema,
       Map<ServerRoutingInstance, DataTable> dataTableMap, BrokerResponseNative brokerResponseNative,
-      BrokerMetrics brokerMetrics) {
+      DataTableReducerContext reducerContext, BrokerMetrics brokerMetrics) {
     // DISTINCT is implemented as an aggregation function in the execution engine. Just like
     // other aggregation functions, DISTINCT returns its result as a single object
     // (of type DistinctTable) serialized by the server into the DataTable and deserialized
@@ -98,7 +98,7 @@ public class DistinctDataTableReducer implements DataTableReducer {
       DistinctTable mainDistinctTable = new DistinctTable(nonEmptyDistinctTables.get(0).getDataSchema(),
           _distinctAggregationFunction.getOrderByExpressions(), _distinctAggregationFunction.getLimit());
       for (DistinctTable distinctTable : nonEmptyDistinctTables) {
-        mainDistinctTable.mergeDeserializedDistinctTable(distinctTable);
+        mainDistinctTable.mergeTable(distinctTable);
       }
 
       // Up until now, we have treated DISTINCT similar to another aggregation function even in terms

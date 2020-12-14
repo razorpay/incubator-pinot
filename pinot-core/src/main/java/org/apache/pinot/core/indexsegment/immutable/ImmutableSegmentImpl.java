@@ -18,14 +18,14 @@
  */
 package org.apache.pinot.core.indexsegment.immutable;
 
+import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
-
-import com.google.common.base.Preconditions;
 import org.apache.pinot.core.common.DataSource;
+import org.apache.pinot.core.realtime.impl.ThreadSafeMutableRoaringBitmap;
 import org.apache.pinot.core.segment.index.column.ColumnIndexContainer;
 import org.apache.pinot.core.segment.index.datasource.ImmutableDataSource;
 import org.apache.pinot.core.segment.index.metadata.ColumnMetadata;
@@ -33,9 +33,12 @@ import org.apache.pinot.core.segment.index.metadata.SegmentMetadataImpl;
 import org.apache.pinot.core.segment.index.readers.Dictionary;
 import org.apache.pinot.core.segment.index.readers.ForwardIndexReader;
 import org.apache.pinot.core.segment.index.readers.InvertedIndexReader;
+import org.apache.pinot.core.segment.index.readers.ValidDocIndexReader;
+import org.apache.pinot.core.segment.index.readers.ValidDocIndexReaderImpl;
 import org.apache.pinot.core.segment.store.SegmentDirectory;
 import org.apache.pinot.core.startree.v2.StarTreeV2;
 import org.apache.pinot.core.startree.v2.store.StarTreeIndexContainer;
+import org.apache.pinot.core.upsert.PartitionUpsertMetadataManager;
 import org.apache.pinot.spi.data.readers.GenericRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +52,11 @@ public class ImmutableSegmentImpl implements ImmutableSegment {
   private final Map<String, ColumnIndexContainer> _indexContainerMap;
   private final StarTreeIndexContainer _starTreeIndexContainer;
 
+  // For upsert
+  private PartitionUpsertMetadataManager _partitionUpsertMetadataManager;
+  private ThreadSafeMutableRoaringBitmap _validDocIds;
+  private ValidDocIndexReader _validDocIndex;
+
   public ImmutableSegmentImpl(SegmentDirectory segmentDirectory, SegmentMetadataImpl segmentMetadata,
       Map<String, ColumnIndexContainer> columnIndexContainerMap,
       @Nullable StarTreeIndexContainer starTreeIndexContainer) {
@@ -56,6 +64,16 @@ public class ImmutableSegmentImpl implements ImmutableSegment {
     _segmentMetadata = segmentMetadata;
     _indexContainerMap = columnIndexContainerMap;
     _starTreeIndexContainer = starTreeIndexContainer;
+  }
+
+  /**
+   * Enables upsert for this segment. It should be called before the segment getting queried.
+   */
+  public void enableUpsert(PartitionUpsertMetadataManager partitionUpsertMetadataManager,
+      ThreadSafeMutableRoaringBitmap validDocIds) {
+    _partitionUpsertMetadataManager = partitionUpsertMetadataManager;
+    _validDocIds = validDocIds;
+    _validDocIndex = new ValidDocIndexReaderImpl(validDocIds);
   }
 
   @Override
@@ -112,7 +130,8 @@ public class ImmutableSegmentImpl implements ImmutableSegment {
 
   @Override
   public void destroy() {
-    LOGGER.info("Trying to destroy segment : {}", getSegmentName());
+    String segmentName = getSegmentName();
+    LOGGER.info("Trying to destroy segment : {}", segmentName);
     for (Map.Entry<String, ColumnIndexContainer> entry : _indexContainerMap.entrySet()) {
       try {
         entry.getValue().close();
@@ -132,11 +151,20 @@ public class ImmutableSegmentImpl implements ImmutableSegment {
         LOGGER.error("Failed to close star-tree. Continuing with error.", e);
       }
     }
+    if (_partitionUpsertMetadataManager != null) {
+      _partitionUpsertMetadataManager.removeSegment(segmentName, _validDocIds);
+    }
   }
 
   @Override
   public List<StarTreeV2> getStarTrees() {
     return _starTreeIndexContainer != null ? _starTreeIndexContainer.getStarTrees() : null;
+  }
+
+  @Nullable
+  @Override
+  public ValidDocIndexReader getValidDocIndex() {
+    return _validDocIndex;
   }
 
   @Override

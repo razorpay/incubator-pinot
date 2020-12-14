@@ -20,13 +20,10 @@ package org.apache.pinot.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.RowIdLifetime;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,6 +42,7 @@ public class PinotConnectionMetaData extends AbstractBaseConnectionMetaData {
   private static final Logger LOGGER = LoggerFactory.getLogger(PinotConnectionMetaData.class);
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
   private final PinotConnection _connection;
   private final PinotControllerTransport _controllerTransport;
   private final String _controllerURL;
@@ -168,6 +166,11 @@ public class PinotConnectionMetaData extends AbstractBaseConnectionMetaData {
     }
 
     for (JsonNode columns : schemaResponse.getMetrics()) {
+      appendColumnMeta(pinotMeta, tableName, ordinalPosition, columns);
+      ordinalPosition++;
+    }
+
+    for (JsonNode columns : schemaResponse.getDateTimeFieldSpecs()) {
       appendColumnMeta(pinotMeta, tableName, ordinalPosition, columns);
       ordinalPosition++;
     }

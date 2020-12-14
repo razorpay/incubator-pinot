@@ -32,7 +32,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import { TablePagination } from '@material-ui/core';
+import { TablePagination, Tooltip } from '@material-ui/core';
 import { TableData } from 'Models';
 import IconButton from '@material-ui/core/IconButton';
 import FirstPageIcon from '@material-ui/icons/FirstPage';
@@ -62,7 +62,13 @@ type Props = {
   recordsCount?: number,
   showSearchBox: boolean,
   inAccordionFormat?: boolean,
-  regexReplace?: boolean
+  regexReplace?: boolean,
+  accordionToggleObject?: {
+    toggleChangeHandler: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    toggleName: string;
+    toggleValue: boolean;
+  },
+  tooltipData?: string[]
 };
 
 const StyledTableRow = withStyles((theme) =>
@@ -251,7 +257,9 @@ export default function CustomizedTables({
   recordsCount,
   showSearchBox,
   inAccordionFormat,
-  regexReplace
+  regexReplace,
+  accordionToggleObject,
+  tooltipData
 }: Props) {
   const [finalData, setFinalData] = React.useState(Utils.tableFormat(data));
 
@@ -261,7 +269,7 @@ export default function CustomizedTables({
   const classes = useStyles();
   const [rowsPerPage, setRowsPerPage] = React.useState(noOfRows || 10);
   const [page, setPage] = React.useState(0);
-
+ 
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -304,6 +312,10 @@ export default function CustomizedTables({
       clearTimeout(timeoutId.current);
     };
   }, [search, timeoutId, filterSearchResults]);
+
+  React.useCallback(()=>{
+    setFinalData(Utils.tableFormat(data));
+  }, [data]);
 
   const styleCell = (str: string) => {
     if (str === 'Good' || str.toLowerCase() === 'online' || str.toLowerCase() === 'alive') {
@@ -353,18 +365,25 @@ export default function CustomizedTables({
                       setColumnClicked(column);
                     }}
                   >
-                    {column}
-                    {column === columnClicked ? order ? (
-                      <ArrowDropDownIcon
-                        color="primary"
-                        style={{ verticalAlign: 'middle' }}
-                      />
-                    ) : (
-                      <ArrowDropUpIcon
-                        color="primary"
-                        style={{ verticalAlign: 'middle' }}
-                      />
-                    ) : null}
+                    <>
+                      {
+                      tooltipData && tooltipData[index] ?
+                        (<Tooltip title={tooltipData[index]} placement="top" arrow><span>{column}</span></Tooltip>)
+                      :
+                        column
+                      }
+                      {column === columnClicked ? order ? (
+                        <ArrowDropDownIcon
+                          color="primary"
+                          style={{ verticalAlign: 'middle' }}
+                        />
+                      ) : (
+                        <ArrowDropUpIcon
+                          color="primary"
+                          style={{ verticalAlign: 'middle' }}
+                        />
+                      ) : null}
+                    </>
                   </StyledTableCell>
                 ))}
               </TableRow>
@@ -387,8 +406,8 @@ export default function CustomizedTables({
                       {Object.values(row).map((cell, idx) =>{
                         let url = baseURL;
                         if(regexReplace){
-                          let regex = /\:.*?:/;
-                          let matches = baseURL.match(regex);
+                          const regex = /\:.*?:/;
+                          const matches = baseURL.match(regex);
                           url = baseURL.replace(matches[0], row[matches[0].replace(/:/g, '')]);
                         }
                         return addLinks && !idx ? (
@@ -408,7 +427,7 @@ export default function CustomizedTables({
                           >
                             {styleCell(cell.toString())}
                           </StyledTableCell>
-                        )
+                        );
                       })}
                     </StyledTableRow>
                   ))
@@ -457,20 +476,20 @@ export default function CustomizedTables({
           searchValue={search}
           handleSearch={(val: string) => setSearch(val)}
           recordCount={recordsCount}
+          accordionToggleObject={accordionToggleObject}
         >
           {renderTableComponent()}
         </SimpleAccordion>
       </>
     );
-  }
+  };
 
   return (
     <div className={highlightBackground ? classes.highlightBackground : classes.root}>
       {inAccordionFormat ?
         renderTableInAccordion()
-      :
-        renderTable()
-      }
+        :
+        renderTable()}
     </div>
   );
 }

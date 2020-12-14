@@ -45,6 +45,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.io.FileUtils;
+import org.apache.pinot.common.restlet.resources.SegmentConsumerInfo;
 import org.apache.pinot.common.restlet.resources.ResourceUtils;
 import org.apache.pinot.common.restlet.resources.TableSegments;
 import org.apache.pinot.common.restlet.resources.TablesList;
@@ -52,10 +53,13 @@ import org.apache.pinot.common.utils.TarGzCompressionUtils;
 import org.apache.pinot.core.data.manager.InstanceDataManager;
 import org.apache.pinot.core.data.manager.SegmentDataManager;
 import org.apache.pinot.core.data.manager.TableDataManager;
+import org.apache.pinot.core.data.manager.realtime.RealtimeSegmentDataManager;
 import org.apache.pinot.core.segment.index.metadata.SegmentMetadataImpl;
 import org.apache.pinot.server.api.access.AccessControl;
 import org.apache.pinot.server.api.access.AccessControlFactory;
 import org.apache.pinot.server.starter.ServerInstance;
+import org.apache.pinot.spi.config.table.TableType;
+import org.apache.pinot.spi.utils.builder.TableNameBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +71,7 @@ public class TablesResource {
   private static final String PEER_SEGMENT_DOWNLOAD_DIR = "peerSegmentDownloadDir";
 
   @Inject
-  ServerInstance serverInstance;
+  private ServerInstance _serverInstance;
 
   @Inject
   private AccessControlFactory _accessControlFactory;
@@ -85,10 +89,10 @@ public class TablesResource {
   }
 
   private InstanceDataManager checkGetInstanceDataManager() {
-    if (serverInstance == null) {
+    if (_serverInstance == null) {
       throw new WebApplicationException("Server initialization error. Missing server instance");
     }
-    InstanceDataManager instanceDataManager = serverInstance.getInstanceDataManager();
+    InstanceDataManager instanceDataManager = _serverInstance.getInstanceDataManager();
     if (instanceDataManager == null) {
       throw new WebApplicationException("Server initialization error. Missing data manager",
           Response.Status.INTERNAL_SERVER_ERROR);
@@ -218,7 +222,7 @@ public class TablesResource {
       // Note that two clients asking the same segment file will result in the same tar.gz files being created twice.
       // Will revisit for optimization if performance becomes an issue.
       File tmpSegmentTarDir =
-          new File(serverInstance.getInstanceDataManager().getSegmentFileDirectory(), PEER_SEGMENT_DOWNLOAD_DIR);
+          new File(_serverInstance.getInstanceDataManager().getSegmentFileDirectory(), PEER_SEGMENT_DOWNLOAD_DIR);
       tmpSegmentTarDir.mkdir();
 
       File segmentTarFile = new File(tmpSegmentTarDir, tableNameWithType + "_" + segmentName + "_" + UUID.randomUUID()
@@ -238,5 +242,42 @@ public class TablesResource {
     } finally {
       tableDataManager.releaseSegment(segmentDataManager);
     }
+  }
+
+  @GET
+  @Path("tables/{realtimeTableName}/consumingSegmentsInfo")
+  @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Get the info for consumers of this REALTIME table", notes = "Get consumers info from the table data manager")
+  public List<SegmentConsumerInfo> getConsumingSegmentsInfo(
+      @ApiParam(value = "Name of the REALTIME table", required = true) @PathParam("realtimeTableName") String realtimeTableName) {
+
+    TableType tableType = TableNameBuilder.getTableTypeFromTableName(realtimeTableName);
+    if (TableType.OFFLINE == tableType) {
+      throw new WebApplicationException("Cannot get consuming segment info for OFFLINE table: " + realtimeTableName);
+    }
+    String tableNameWithType = TableNameBuilder.forType(TableType.REALTIME).tableNameWithType(realtimeTableName);
+
+    List<SegmentConsumerInfo> segmentConsumerInfoList = new ArrayList<>();
+    TableDataManager tableDataManager = checkGetTableDataManager(tableNameWithType);
+    List<SegmentDataManager> segmentDataManagers = tableDataManager.acquireAllSegments();
+    try {
+      for (SegmentDataManager segmentDataManager : segmentDataManagers) {
+        if (segmentDataManager instanceof RealtimeSegmentDataManager) {
+          RealtimeSegmentDataManager realtimeSegmentDataManager = (RealtimeSegmentDataManager) segmentDataManager;
+          String segmentName = segmentDataManager.getSegmentName();
+          segmentConsumerInfoList.add(
+              new SegmentConsumerInfo(segmentName, realtimeSegmentDataManager.getConsumerState().toString(),
+                  realtimeSegmentDataManager.getLastConsumedTimestamp(),
+                  realtimeSegmentDataManager.getPartitionToCurrentOffset()));
+        }
+      }
+    } catch (Exception e) {
+      throw new WebApplicationException("Caught exception when getting consumer info for table: " + realtimeTableName);
+    } finally {
+      for (SegmentDataManager segmentDataManager : segmentDataManagers) {
+        tableDataManager.releaseSegment(segmentDataManager);
+      }
+    }
+    return segmentConsumerInfoList;
   }
 }

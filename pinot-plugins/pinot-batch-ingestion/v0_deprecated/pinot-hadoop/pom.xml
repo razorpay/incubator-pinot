@@ -25,7 +25,7 @@
   <parent>
     <artifactId>v0_deprecated</artifactId>
     <groupId>org.apache.pinot</groupId>
-    <version>0.6.0-SNAPSHOT</version>
+    <version>0.7.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>pinot-hadoop</artifactId>
@@ -119,6 +119,10 @@
           <groupId>org.apache.pinot</groupId>
           <artifactId>pinot-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -129,6 +133,14 @@
         <exclusion>
           <groupId>org.apache.pinot</groupId>
           <artifactId>pinot-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

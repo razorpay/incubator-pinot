@@ -28,20 +28,11 @@ import org.apache.commons.collections4.MapUtils;
 public class SlackConfiguration {
 
 	public static final String SLACK_CONF = "slackConfiguration";
-	public static final String SLACK_URL = "webhookUrl";
 	public static final String DEFAULT_CHANNEL = "defaultChannel";
 	public static final String SLACK_TOKEN = "SLACK_TOKEN";
 
-	private String url;
 	private String defaultChannel;
 
-	public String getUrl() {
-		return url;
-	}
-
-	public void setUrl(String url) {
-		this.url = url;
-	}
 
 	public String getDefaultChannel() {
 		return defaultChannel;
@@ -51,17 +42,12 @@ public class SlackConfiguration {
 		this.defaultChannel = defaultChannel;
 	}
 
-	@Override
-	public String toString() {
-		return MoreObjects.toStringHelper(this).add(SLACK_URL, url).toString();
-	}
-
 	public static SlackConfiguration createFromProperties(Map<String, Object> slackConfiguration) {
 		SlackConfiguration conf = new SlackConfiguration();
 		try {
-			conf.setUrl(MapUtils.getString(slackConfiguration, SLACK_URL));
+			conf.setDefaultChannel(MapUtils.getString(slackConfiguration, DEFAULT_CHANNEL));
 		} catch (Exception e) {
-			throw new RuntimeException("Error occurred while parsing slack configuration into object.", e);
+			throw new RuntimeException("Error occurred while parsing slack configuration (slack default channel) into object.", e);
 		}
 		return conf;
 	}

@@ -30,7 +30,6 @@ alerterConfiguration:
     smtpHost: "localhost"
     smtpPort: 25
   slackConfiguration:
-    webhookUrl: "replaceme"
     defaultChannel: "#tech_observability"
 
 #  jiraConfiguration:

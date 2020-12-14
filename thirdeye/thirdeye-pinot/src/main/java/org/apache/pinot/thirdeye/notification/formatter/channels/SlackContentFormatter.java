@@ -72,10 +72,10 @@ public class SlackContentFormatter extends AlertContentFormatter {
 	}
 
 	/**
-	 * Make sure the base admin parameters are configured before proceeding
+	 * Make sure the slack default channel is configured before proceeding
 	 */
 	private void validateSlackConfigs(SlackConfiguration slackAdminConfig) {
-		Preconditions.checkNotNull(slackAdminConfig.getUrl());
+		Preconditions.checkNotNull(slackAdminConfig.getDefaultChannel());
 	}
 
 	/**
@@ -134,13 +134,10 @@ public class SlackContentFormatter extends AlertContentFormatter {
 	 */
 	private SlackEntity buildSlackEntity(String slackTemplate, Map<String, Object> templateValues,
 			Multimap<String, String> dimensionFilters) {
-		String webhookUrl = MapUtils.getString(alertClientConfig, SlackConfiguration.SLACK_URL,
-				this.slackAdminConfig.getUrl());
 		String token = System.getenv(SlackConfiguration.SLACK_TOKEN);
 		String defaultChannel = MapUtils.getString(alertClientConfig, SlackConfiguration.DEFAULT_CHANNEL,
 				this.slackAdminConfig.getDefaultChannel());
 		SlackEntity slackEntity = new SlackEntity();
-		slackEntity.setUrl(webhookUrl);
 		slackEntity.setSlackToken(token);
 		slackEntity.setDefaultChannel(defaultChannel);
 		slackEntity.setDescription(buildDescription(slackTemplate, templateValues));

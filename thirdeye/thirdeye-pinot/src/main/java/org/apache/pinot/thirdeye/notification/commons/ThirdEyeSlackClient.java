@@ -49,6 +49,8 @@ public class ThirdEyeSlackClient {
 		this.slack = Slack.getInstance();
 	}
 
+	public static final String PROP_CHANNELS = "channels";
+
 	/**
 	 * Creates a new slack message with specified settings
 	 */
@@ -62,9 +64,16 @@ public class ThirdEyeSlackClient {
 				.build());
 		ChatPostMessageResponse response = null;
 		try {
-			// p.text("Anomaly Alert") is for mobile lock screen notification
-			response = slack.methods(token)
-					.chatPostMessage(req -> req.channel(defaultChannel).text("Anomaly Alert").blocks(message));
+			List<String> alertChannels = slackEntity.getChannels();
+			if (!alertChannels.isEmpty()) {
+				for (String channel : alertChannels) {
+					response = slack.methods(token)
+							.chatPostMessage(req -> req.channel(channel).text("Anomaly Alert").blocks(message));
+				}
+			} else {
+				response = slack.methods(token)
+						.chatPostMessage(req -> req.channel(defaultChannel).text("Anomaly Alert").blocks(message));
+			}
 		} catch (IOException | SlackApiException e) {
 			LOG.error(Arrays.toString(e.getStackTrace()));
 		}

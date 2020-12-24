@@ -26,20 +26,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Multimap;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.pinot.thirdeye.anomaly.ThirdEyeAnomalyConfiguration;
 import org.apache.pinot.thirdeye.anomalydetection.context.AnomalyResult;
 import org.apache.pinot.thirdeye.datalayer.dto.DetectionAlertConfigDTO;
+import org.apache.pinot.thirdeye.detection.ConfigUtils;
 import org.apache.pinot.thirdeye.notification.commons.SlackConfiguration;
 import org.apache.pinot.thirdeye.notification.commons.SlackEntity;
 import org.apache.pinot.thirdeye.notification.content.BaseNotificationContent;
 import org.apache.pinot.thirdeye.notification.content.templates.MetricAnomaliesContent;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Multimap;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -142,6 +144,10 @@ public class SlackContentFormatter extends AlertContentFormatter {
 		slackEntity.setDefaultChannel(defaultChannel);
 		slackEntity.setDescription(buildDescription(slackTemplate, templateValues));
 		slackEntity.setSummary(buildSummary(templateValues, dimensionFilters));
+		List<String> channels = ConfigUtils.getList(alertClientConfig.get(SlackConfiguration.CHANNELS));
+		if (!channels.isEmpty()) {
+			slackEntity.setChannels(channels);
+		}
 		return slackEntity;
 	}
 }

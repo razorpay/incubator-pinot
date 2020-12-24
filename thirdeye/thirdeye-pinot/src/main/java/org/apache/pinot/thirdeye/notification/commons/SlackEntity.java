@@ -20,6 +20,7 @@
 package org.apache.pinot.thirdeye.notification.commons;
 
 import java.util.Map;
+import java.util.List;
 
 /**
  * ThirdEye's Slack Settings Holder
@@ -32,6 +33,7 @@ public class SlackEntity {
 	private String description;
 	// Place holder for configuring non-standard customized slack fields
 	private Map<String, Object> customFieldsMap;
+	private List<String> channels;
 
 	public String getUrl() {
 		return url;
@@ -89,6 +91,14 @@ public class SlackEntity {
 		sb.append(", custom='").append(customFieldsMap).append('\'');
 		sb.append('}');
 		return sb.toString();
+	}
+
+	public List<String> getChannels() {
+		return channels;
+	}
+
+	public void setChannels(List<String> channels) {
+		this.channels = channels;
 	}
 
 }

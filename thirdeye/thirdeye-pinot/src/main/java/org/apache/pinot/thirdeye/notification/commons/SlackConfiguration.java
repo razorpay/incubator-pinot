@@ -30,6 +30,7 @@ public class SlackConfiguration {
 	public static final String SLACK_CONF = "slackConfiguration";
 	public static final String DEFAULT_CHANNEL = "defaultChannel";
 	public static final String SLACK_TOKEN = "SLACK_TOKEN";
+	public static final String CHANNELS = "channels";
 
 	private String defaultChannel;
 

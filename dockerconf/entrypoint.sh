@@ -21,7 +21,12 @@
 #set -euo pipefail
 
 ## Initialize files from environment variables. These should come from the kubernetes secrets configured
-## CONFIG_DIR is an environment variable, ideally equal to /opt/thirdeye/config/default. Look at the Dockerfile.thirdeye for reference
+## CONFIG_DIR is an environment variable, ideally equal to /opt/thirdeye/config/default. 
+## FE_CONFIG_DIR is an environment variable, ideally equal to /opt/thirdeye/thirdeye-frontend/config. 
+## Look at the Dockerfile.thirdeye for reference
+
+echo "Setting environment.js file $FE_CONFIG_DIR/environment.js"
+sed -e 's|process.env.GOOGLE_CLIENT_ID|'$GOOGLE_CLIENT_ID'|g' -e 's|process.env.GOOGLE_AUTH_REDIRECT_URL|'$GOOGLE_AUTH_REDIRECT_URL'|g' $FE_CONFIG_DIR/environment.js
 
 echo "Setting Config File : $CONFIG_DIR/persistence.yml"
 sed -e "s/MYSQL_HOSTNAME/$(eval echo $MYSQL_HOSTNAME)/" -e "s/MYSQL_PORT/$(eval echo $MYSQL_PORT)/" -e "s/THIRDEYE_DATABASE/$(eval echo $THIRDEYE_DATABASE)/" -e "s/MYSQL_USERNAME/$(eval echo $MYSQL_USERNAME)/" -e "s/MYSQL_PASSWORD/\"$(eval echo $MYSQL_PASSWORD)\"/" $CONFIG_DIR/persistence.yml.tmpl > $CONFIG_DIR/persistence.yml

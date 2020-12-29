@@ -114,13 +114,13 @@ public class RootCauseResource {
       @QueryParam("analysisStart") Long analysisStart,
       @ApiParam(value = "end of overall time window to consider for events")
       @QueryParam("analysisEnd") Long analysisEnd,
-      @ApiParam(value = "start time of the anomalous time period for the metric under analysis", defaultValue = "analysisStart")
+      @ApiParam(value = "start time of the anomalous time period for the metric under analysis", defaultValue = "7")
       @QueryParam("anomalyStart") Long anomalyStart,
-      @ApiParam(value = "end time of the anomalous time period for the metric under analysis", defaultValue = "analysisEnd")
+      @ApiParam(value = "end time of the anomalous time period for the metric under analysis", defaultValue = "7")
       @QueryParam("anomalyEnd") Long anomalyEnd,
-      @ApiParam(value = "baseline start time, e.g. anomaly start time offset by 1 week", defaultValue = "anomalyStart - 7 days")
+      @ApiParam(value = "baseline start time, e.g. anomaly start time offset by 1 week", defaultValue = "7")
       @QueryParam("baselineStart") Long baselineStart,
-      @ApiParam(value = "baseline end time, e.g. typically anomaly start time offset by 1 week", defaultValue = "anomalyEnd - 7 days")
+      @ApiParam(value = "baseline end time, e.g. typically anomaly start time offset by 1 week", defaultValue = "7")
       @QueryParam("baselineEnd") Long baselineEnd,
       @QueryParam("formatterDepth") Integer formatterDepth,
       @ApiParam(value = "URNs of metrics to analyze")

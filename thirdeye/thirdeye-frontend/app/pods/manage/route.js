@@ -19,19 +19,6 @@ export default Route.extend(AuthenticatedRouteMixin, {
     }
   },
 
-  async model(params) {
-    const headers = {};
-    let sessionToken = this.get("session.data.authenticated.session");
-    if (sessionToken && !isEmpty(sessionToken)) {
-      console.get("in headers");
-      headers["Authorization"] = "Token " + sessionToken;
-    }
-
-    return hash({
-      headers,
-    });
-  },
-
   actions: {
     /**
      * save session url for transition on login

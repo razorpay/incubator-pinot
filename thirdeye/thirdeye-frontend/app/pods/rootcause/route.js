@@ -168,12 +168,6 @@ export default Route.extend(AuthenticatedRouteMixin, {
     const isDevEnv = config.environment === 'development';
 
     let metricUrn, metricEntity, session, anomalyUrn, anomalyTemplateEntity, anomalySessions, metricTemplate;
-    const headers = {};
-    let sessionToken = this.get("session.data.authenticated.session");
-    if (sessionToken && !isEmpty(sessionToken)) {
-      console.get("in headers");
-      headers["Authorization"] = "Token " + sessionToken;
-    }
 
     if (metricId) {
       metricUrn = `thirdeye:metric:${metricId}`;
@@ -250,8 +244,7 @@ export default Route.extend(AuthenticatedRouteMixin, {
       analysisRange,
       metricTemplate,
       granularity: granularityInit,
-      compareMode: compareModeInit,
-      headers
+      compareMode: compareModeInit
     });
   },
 

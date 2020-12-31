@@ -34,17 +34,10 @@ export default Route.extend(AuthenticatedRouteMixin, {
       anomalyIds = anomalyIds.split(",");
     }
 
-    const headers = {};
-    let sessionToken = this.get("session.data.authenticated.session");
-    if (sessionToken && !isEmpty(sessionToken)) {
-      console.get("in headers");
-      headers["Authorization"] = "Token " + sessionToken;
-    }
-
     // query anomalies
     searchResult = searchAnomaly(0, pagesize, anomalyIds ? null : start, anomalyIds ? null : end, anomalyIds);
     return hash({
-      updateAnomalies: searchAnomaly, anomalyIds, searchResult, headers
+      updateAnomalies: searchAnomaly, anomalyIds, searchResult
     });
   },
 

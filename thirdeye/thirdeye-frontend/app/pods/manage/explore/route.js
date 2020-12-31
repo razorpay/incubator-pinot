@@ -20,17 +20,9 @@ export default Route.extend(AuthenticatedRouteMixin, {
     const alertId = params.alert_id;
     const analysisRange = get(this, 'analysisRange');
 
-    const headers = {};
-    let sessionToken = this.get("session.data.authenticated.session");
-    if (sessionToken && !isEmpty(sessionToken)) {
-      headers["Authorization"] = "Token " + sessionToken;
-    }
-    headers["content-type"] = ["application/json"];
-
     const getProps = {
       method: "get",
-      headers,
-      // headers: { 'content-type': 'application/json' }
+      headers: { 'content-type': 'application/json' }
     };
 
   

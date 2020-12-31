@@ -19,13 +19,7 @@ export default Route.extend(AuthenticatedRouteMixin, {
   session: service(),
 
   model() {
-    const headers = {};
-    let sessionToken = this.get("session.data.authenticated.session");
-    if (sessionToken && !isEmpty(sessionToken)) {
-      console.get("in headers");
-      headers["Authorization"] = "Token " + sessionToken;
-    }
-    return hash({ headers,
+    return hash({
       polishedDetectionYaml: fetch(yamlAPI.getPaginatedAlertsUrl()).then(
         checkStatus
       ),

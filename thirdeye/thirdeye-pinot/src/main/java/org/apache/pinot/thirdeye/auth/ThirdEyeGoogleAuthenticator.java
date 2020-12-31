@@ -72,7 +72,7 @@ public class ThirdEyeGoogleAuthenticator implements Authenticator<ThirdEyeCreden
 				GoogleIdToken.Payload payload = idToken.getPayload();
 				String userId = payload.getSubject(); // Use this value as a key to identify a user.
 				String email = payload.getEmail();
-				ThirdEyePrincipal principal = new ThirdEyePrincipal(userId, userId); // userId as name and sessionKey
+				ThirdEyePrincipal principal = new ThirdEyePrincipal(email, userId); // userId as name and sessionKey
 				principal.setEmailId(email);
 				return Optional.of(principal);
 			} catch (IOException e) {
@@ -90,7 +90,6 @@ public class ThirdEyeGoogleAuthenticator implements Authenticator<ThirdEyeCreden
 	public Optional<ThirdEyePrincipal> authenticate(ThirdEyeCredentials credentials) throws AuthenticationException {
 		try {
 			if (StringUtils.isNotBlank(credentials.getToken())) {
-				// if getToken() which is userID.
 				SessionDTO sessionDTO = this.sessionDAO.findBySessionKey(credentials.getToken());
 				if (sessionDTO != null && System.currentTimeMillis() < sessionDTO.getExpirationTime()) {
 					return Optional.of(new ThirdEyePrincipal(credentials.getPrincipal(), credentials.getToken()));

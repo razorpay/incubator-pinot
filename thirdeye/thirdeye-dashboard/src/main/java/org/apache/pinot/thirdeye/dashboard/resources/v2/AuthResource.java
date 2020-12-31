@@ -120,8 +120,10 @@ public class AuthResource {
 			sessionDTO.setPrincipal(userNameOrID);
 			String sessionKey = generateSessionKey(userNameOrID);
 			sessionDTO.setSessionKey(sessionKey);
-			sessionDTO.setPrincipalType(SessionBean.PrincipalType.USERID);
+			sessionDTO.setPrincipalType(SessionBean.PrincipalType.USER);
 			if (principal.getEmailId() != null) {
+				String email = principal.getEmailId();
+				sessionDTO.setPrincipal(email);
 				sessionDTO.setEmailId(principal.getEmailId());
 			}
 

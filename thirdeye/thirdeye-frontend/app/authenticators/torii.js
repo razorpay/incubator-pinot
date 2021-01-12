@@ -15,23 +15,29 @@ export default Torii.extend({
   },
 
   authenticate(options) {
+    console.log("options:", options);
     return this._super(options).then(function (data) {
+      console.log("data:", data);
       const url = "/auth/authenticate";
       const credentials = {
         principal: "torii google auth",
-        code: data.authorizationCode,
+        code: data.authorizationCode
       };
 
       const postProps = {
         method: "post",
         body: JSON.stringify(credentials),
         headers: {
-          "content-type": "Application/Json",
-        },
+          "content-type": "Application/Json"
+        }
       };
       return fetch(url, postProps)
-        .then((response) => {})
-        .catch(() => {});
+        .then((response) => {
+          console.log("torii response:", response);
+        })
+        .catch((error) => {
+          console.error("torii error:", error);
+        });
     });
   },
 

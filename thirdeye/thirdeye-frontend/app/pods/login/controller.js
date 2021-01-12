@@ -3,6 +3,7 @@ import Controller from "@ember/controller";
 import { get } from "@ember/object";
 import _ from "lodash";
 import Ember from "ember";
+import { getOwner } from "@ember/application";
 
 export default Controller.extend({
   errorMessage: null,
@@ -84,16 +85,22 @@ export default Controller.extend({
         });
     },
     onGoogleLogin() {
-      this.session
-        .authenticate("authenticator:torii", "google-oauth2")
-        .then((response) => {
-          let authenticated = this.get("session.data.authenticated");
-          Ember.getOwner(this)
-            .lookup("authenticator:torii")
-            .trigger("sessionDataUpdated", authenticated);
-          this.set("session.store.cookieExpirationTime", 60 * 60 * 24 * 7);
-        })
-        .catch(() => {});
-    },
-  },
+      console.log("onGoogleLogin click");
+      this.get("session").authenticate("authenticator:torii", "google-oauth2");
+      return;
+      // this.session
+      //   .authenticate("authenticator:torii", "google-oauth2")
+      //   .then((response) => {
+      //     console.log("onGoogleLogin response:", response);
+      //     // let authenticated = this.get("session.data.authenticated");
+      //     // getOwner(this)
+      //     //   .lookup("authenticator:torii")
+      //     //   .trigger("sessionDataUpdated", authenticated);
+      //     // this.set("session.store.cookieExpirationTime", 60 * 60 * 24 * 7);
+      //   })
+      //   .catch((error) => {
+      //     console.error("onGoolgeLogin error:", error);
+      //   });
+    }
+  }
 });

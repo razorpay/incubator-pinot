@@ -53,7 +53,7 @@ module.exports = function (environment) {
         "google-oauth2": {
           apiKey:
             "391316638671-qbubq6ip7icqovomv38fpdh4jkbm2c93.apps.googleusercontent.com",
-          redirectUri: "https://thirdeye.concierge.stage.razorpay.in/",
+          redirectUri: "https://thirdeye.concierge.stage.razorpay.in",
           scope: "email profile",
         },
       },

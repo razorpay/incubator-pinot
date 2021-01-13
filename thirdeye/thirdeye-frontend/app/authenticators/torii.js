@@ -1,12 +1,15 @@
+/* eslint-disable no-console */
 import Ember from "ember";
 import Torii from "ember-simple-auth/authenticators/torii";
+import { Promise } from "rsvp";
+import { isEmpty } from "@ember/utils";
 const { service } = Ember.inject;
 
 export default Torii.extend({
   torii: service("torii"),
   restore: function (data) {
-    return new Ember.RSVP.Promise(function (resolve, reject) {
-      if (!Ember.isEmpty(data)) {
+    return new Promise(function (resolve, reject) {
+      if (!isEmpty(data)) {
         resolve(data);
       } else {
         reject();
@@ -15,9 +18,7 @@ export default Torii.extend({
   },
 
   authenticate(options) {
-    console.log("options:", options);
     return this._super(options).then(function (data) {
-      console.log("data:", data);
       const url = "/auth/authenticate";
       const credentials = {
         principal: "torii google auth",
@@ -32,11 +33,10 @@ export default Torii.extend({
         }
       };
       return fetch(url, postProps)
-        .then((response) => {
-          console.log("torii response:", response);
+        .then(() => {
         })
         .catch((error) => {
-          console.error("torii error:", error);
+          console.error("torii authenticate error:", error);
         });
     });
   },

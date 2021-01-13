@@ -55,16 +55,10 @@ public class ThirdEyeGoogleAuthenticator implements Authenticator<ThirdEyeCreden
 		String clientId = configMap.get("clientId");
 		String clientSecret = configMap.get("clientSecret");
 		String redirectURL = configMap.get("redirectURL");
-
-		LOG.info("tokenURL: {}", tokenURL);
-		LOG.info("clientId: {}", clientId);
-		LOG.info("clientSecret: {}", clientSecret);
-		LOG.info("redirectURL: {}", redirectURL);
-
 		GoogleTokenResponse tokenResponse = null;
 		try {
 			tokenResponse = new GoogleAuthorizationCodeTokenRequest(new NetHttpTransport(),
-					JacksonFactory.getDefaultInstance(), tokenURL, clientId, clientSecret, authCode, redirectURL) // Specify
+					JacksonFactory.getDefaultInstance(), tokenURL, clientId, clientSecret, authCode, redirectURL)
 							.execute();
 		} catch (IOException e) {
 			LOG.error("Invalid google token response");
@@ -75,9 +69,10 @@ public class ThirdEyeGoogleAuthenticator implements Authenticator<ThirdEyeCreden
 			try {
 				GoogleIdToken idToken = tokenResponse.parseIdToken();
 				GoogleIdToken.Payload payload = idToken.getPayload();
-				String userId = payload.getSubject(); // Use this value as a key to identify a user.
+				String userId = payload.getSubject();
 				String email = payload.getEmail();
-				ThirdEyePrincipal principal = new ThirdEyePrincipal(email, userId); // userId as name and sessionKey
+				// userId as name and sessionKey
+				ThirdEyePrincipal principal = new ThirdEyePrincipal(email, userId);
 				principal.setEmailId(email);
 				return Optional.of(principal);
 			} catch (IOException e) {

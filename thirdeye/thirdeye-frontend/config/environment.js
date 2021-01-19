@@ -43,7 +43,7 @@ module.exports = function (environment) {
       createAlert: "/link/to/create/alert/wiki",
       detectionConfig: "/link/to/DetectionConfiguration/wiki",
       subscriptionConfig: "/link/to/NotificationConfiguration/wiki",
-      cubeWiki: "/link/to/cubeAlgorithm/wiki"
+      cubeWiki: "/link/to/cubeAlgorithm/wiki",
     },
 
     torii: {
@@ -51,11 +51,11 @@ module.exports = function (environment) {
       allowUnsafeRedirect: true,
       providers: {
         "google-oauth2": {
-          apiKey: process.env.GOOGLE_CLIENT_ID,
-          redirectUri: process.env.GOOGLE_AUTH_REDIRECT_URL,
-          scope: "email profile"
-        }
-      }
+          apiKey: '"' + process.env.GOOGLE_CLIENT_ID + '"',
+          redirectUri: '"' + process.env.GOOGLE_AUTH_REDIRECT_URL + '"',
+          scope: "email profile",
+        },
+      },
     },
 
     // used to split username if needed.

@@ -25,10 +25,9 @@ ENV TE_GITHUB_SRC_DIR=.
 
 ENV TE_HOME=/opt/thirdeye
 
-# ENV FE_CONFIG_DIR=${TE_HOME}/thirdeye-frontend/config/default
+ENV FE_CONFIG_DIR=${TE_HOME}/thirdeye-frontend/config/default
 
-RUN mkdir -p ${TE_HOME}/bin && mkdir -p ${TE_HOME}/config/default/data-sources && mkdir -p ${TE_HOME}/config/default/detector-config/anomaly-functions && mkdir -p ${TE_HOME}/config/default/data 
-# && mkdir -p ${FE_CONFIG_DIR}
+RUN mkdir -p ${TE_HOME}/bin && mkdir -p ${TE_HOME}/config/default/data-sources && mkdir -p ${TE_HOME}/config/default/detector-config/anomaly-functions && mkdir -p ${TE_HOME}/config/default/data && mkdir -p ${FE_CONFIG_DIR}
 
 COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-dashboard/target/thirdeye-dashboard-1.0.0-SNAPSHOT.jar ${TE_HOME}/bin/
 COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-pinot/jmx_prometheus_javaagent-0.13.0.jar ${TE_HOME}/bin/jmx_prometheus_javaagent-0.13.0.jar

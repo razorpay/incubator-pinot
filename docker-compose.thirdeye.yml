@@ -39,6 +39,7 @@ services:
       - ./dockerconf/entrypoint_dev.sh:/opt/thirdeye/bin/entrypoint_dev.sh
       - ./thirdeye/thirdeye-dashboard/config/rca.yml:/opt/thirdeye/config/default/rca.yml
       - ./thirdeye/thirdeye-dashboard/config/dashboard.yml:/opt/thirdeye/config/default/dashboard.yml
+      - ./thirdeye/thirdeye-frontend/config/environment.js:/opt/thirdeye/thirdeye-frontend/config/default/environment.js
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/persistence.yml.tmpl:/opt/thirdeye/config/default/persistence.yml.tmpl
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/data-sources/data-sources-config.yml.tmpl:/opt/thirdeye/config/default/data-sources/data-sources-config.yml.tmpl
       #- ./dockerconf/entrypoint.sh:/opt/thirdeye/bin/entrypoint.sh
@@ -46,7 +47,7 @@ services:
       #- ./thirdeye/thirdeye-pinot/config-templates/dev/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
     environment:
       CONFIG_DIR: /opt/thirdeye/config/default
-      # FE_CONFIG_DIR: /opt/thirdeye/thirdeye-frontend/config/default
+      FE_CONFIG_DIR: /opt/thirdeye/thirdeye-frontend/config/default
       MYSQL_HOSTNAME: thirdeye_mysql
       MYSQL_PORT: 3306
       THIRDEYE_DATABASE: thirdeye
@@ -80,6 +81,7 @@ services:
       - ./dockerconf/entrypoint_dev.sh:/opt/thirdeye/bin/entrypoint_dev.sh
       - ./thirdeye/thirdeye-dashboard/config/rca.yml:/opt/thirdeye/config/default/rca.yml
       - ./thirdeye/thirdeye-dashboard/config/dashboard.yml:/opt/thirdeye/config/default/dashboard.yml
+      - ./thirdeye/thirdeye-frontend/config/environment.js:/opt/thirdeye/thirdeye-frontend/config/default/environment.js
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/persistence.yml.tmpl:/opt/thirdeye/config/default/persistence.yml.tmpl
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/data-sources/data-sources-config.yml.tmpl:/opt/thirdeye/config/default/data-sources/data-sources-config.yml.tmpl
       #- ./dockerconf/entrypoint.sh:/opt/thirdeye/bin/entrypoint.sh
@@ -89,7 +91,7 @@ services:
       - 8081:8080
     environment:
       CONFIG_DIR: /opt/thirdeye/config/default
-      # FE_CONFIG_DIR: /opt/thirdeye/thirdeye-frontend/config/default
+      FE_CONFIG_DIR: /opt/thirdeye/thirdeye-frontend/config/default
       MYSQL_HOSTNAME: thirdeye_mysql
       MYSQL_PORT: 3306
       THIRDEYE_DATABASE: thirdeye

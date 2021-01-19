@@ -21,7 +21,8 @@
 #set -euo pipefail
 
 echo "Setting environment.js file $FE_CONFIG_DIR/environment.js"
-sed -e 's|process.env.GOOGLE_CLIENT_ID|'$GOOGLE_CLIENT_ID'|g' -e 's|process.env.GOOGLE_AUTH_REDIRECT_URL|'$GOOGLE_AUTH_REDIRECT_URL'|g' $FE_CONFIG_DIR/environment.js
+sed -e "s|process.env.GOOGLE_CLIENT_ID|$(eval echo $GOOGLE_CLIENT_ID)|g" -e "s|process.env.GOOGLE_AUTH_REDIRECT_URL|$(eval echo $GOOGLE_AUTH_REDIRECT_URL)|g" $FE_CONFIG_DIR/environment.js > /tmp/environment.js
+mv /tmp/environment.js $FE_CONFIG_DIR/environment.js
 
 app_type=$1
 if [[ "${app_type}" == "frontend" ]]; then

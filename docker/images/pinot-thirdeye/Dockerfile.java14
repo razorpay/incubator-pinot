@@ -37,7 +37,7 @@ COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-dashboard/config/data-sources/* ${TE
 COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-dashboard/config/detector-config/* ${TE_HOME}/config/default/detector-config/
 COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-dashboard/config/detector-config/anomaly-functions/* ${TE_HOME}/config/default/detector-config/anomaly-functions/
 COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-dashboard/config/data/* ${TE_HOME}/config/default/data/
-# COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-frontend/config/environment.js ${FE_CONFIG_DIR}/
+COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-frontend/config/environment.js ${FE_CONFIG_DIR}/
 
 ## Remove the h2db.mv.db
 #RUN rm ${TE_HOME}/config/default/h2db.mv.db 

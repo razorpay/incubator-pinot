@@ -26,16 +26,19 @@ import com.google.common.collect.Multimap;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import java.util.TimeZone;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pinot.thirdeye.common.time.TimeGranularity;
@@ -57,10 +60,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
-import java.text.DateFormat;
 
 
 public class SqlUtils {
@@ -97,7 +96,7 @@ public class SqlUtils {
   private static final String DRUID = "Druid";
 
   // For druid, set the default timezone to IST
-  private static final String DRUID_TIMEZONE = "Asia/Calcutta";
+  private static final String DRUID_TIMEZONE = "UTC";
 
   /**
    * Insert a table to SQL database, currently only used by H2, that can be read by ThirdEye

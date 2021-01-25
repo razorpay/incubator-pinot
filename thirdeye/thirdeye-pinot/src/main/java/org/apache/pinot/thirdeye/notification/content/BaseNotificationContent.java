@@ -65,18 +65,18 @@ import org.joda.time.Weeks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- * This class (helper) defines the overall alert message content. This will
- * be derived to implement various anomaly alerting templates.
+ * This class (helper) defines the overall alert message content. This will be
+ * derived to implement various anomaly alerting templates.
  */
 public abstract class BaseNotificationContent implements NotificationContent {
   private static final Logger LOG = LoggerFactory.getLogger(BaseNotificationContent.class);
 
-  /*  The Event Crawl Offset takes the standard period format, ex: P1D for 1 day, P1W for 1 week
-  Y: years     M: months              W: weeks
-  D: days      H: hours (after T)     M: minutes (after T)
-  S: seconds along with milliseconds (after T) */
+  /*
+   * The Event Crawl Offset takes the standard period format, ex: P1D for 1 day,
+   * P1W for 1 week Y: years M: months W: weeks D: days H: hours (after T) M:
+   * minutes (after T) S: seconds along with milliseconds (after T)
+   */
   private static final String EVENT_CRAWL_OFFSET = "eventCrawlOffset";
   private static final String PRE_EVENT_CRAWL_OFFSET = "preEventCrawlOffset";
   private static final String POST_EVENT_CRAWL_OFFSET = "postEventCrawlOffset";
@@ -88,6 +88,7 @@ public abstract class BaseNotificationContent implements NotificationContent {
   private static final String DEFAULT_INCLUDE_SUMMARY = "false";
   private static final String DEFAULT_DATE_PATTERN = "MMM dd, HH:mm";
   private static final String DEFAULT_TIME_ZONE = "America/Los_Angeles";
+  private static final String IST = "Asia/Calcutta";
   private static final String DEFAULT_EVENT_CRAWL_OFFSET = "P2D";
 
   protected static final String EVENT_FILTER_COUNTRY = "countryCode";
@@ -109,11 +110,10 @@ public abstract class BaseNotificationContent implements NotificationContent {
     this.properties = properties;
     this.thirdEyeAnomalyConfig = config;
 
-    this.includeSentAnomaliesOnly = Boolean.valueOf(
-        properties.getProperty(INCLUDE_SENT_ANOMALY_ONLY, DEFAULT_INCLUDE_SENT_ANOMALY_ONLY));
-    this.includeSummary = Boolean.valueOf(
-        properties.getProperty(INCLUDE_SUMMARY, DEFAULT_INCLUDE_SUMMARY));
-    this.dateTimeZone = DateTimeZone.forID(properties.getProperty(TIME_ZONE, DEFAULT_TIME_ZONE));
+    this.includeSentAnomaliesOnly = Boolean
+        .valueOf(properties.getProperty(INCLUDE_SENT_ANOMALY_ONLY, DEFAULT_INCLUDE_SENT_ANOMALY_ONLY));
+    this.includeSummary = Boolean.valueOf(properties.getProperty(INCLUDE_SUMMARY, DEFAULT_INCLUDE_SUMMARY));
+    this.dateTimeZone = DateTimeZone.forID(properties.getProperty(TIME_ZONE, IST));
 
     Period defaultPeriod = Period.parse(properties.getProperty(EVENT_CRAWL_OFFSET, DEFAULT_EVENT_CRAWL_OFFSET));
     this.preEventCrawlOffset = defaultPeriod;
@@ -145,7 +145,8 @@ public abstract class BaseNotificationContent implements NotificationContent {
   /**
    * Generate subject based on configuration.
    */
-  public static String makeSubject(AlertConfigBean.SubjectType subjectType, DetectionAlertConfigDTO notificationConfig, Map<String, Object> templateData) {
+  public static String makeSubject(AlertConfigBean.SubjectType subjectType, DetectionAlertConfigDTO notificationConfig,
+      Map<String, Object> templateData) {
     String baseSubject = "Thirdeye Alert : " + notificationConfig.getName();
 
     switch (subjectType) {
@@ -174,7 +175,8 @@ public abstract class BaseNotificationContent implements NotificationContent {
         datasets.add(mergedAnomaly.getCollection());
         metrics.add(mergedAnomaly.getMetric());
 
-        MetricConfigDTO metric = this.metricDAO.findByMetricAndDataset(mergedAnomaly.getMetric(), mergedAnomaly.getCollection());
+        MetricConfigDTO metric = this.metricDAO.findByMetricAndDataset(mergedAnomaly.getMetric(),
+            mergedAnomaly.getCollection());
         if (metric != null) {
           metricsMap.put(metric.getId().toString(), metric);
         }
@@ -188,10 +190,12 @@ public abstract class BaseNotificationContent implements NotificationContent {
     templateData.put("metricsMap", metricsMap);
   }
 
-  protected Map<String, Object> getTemplateData(DetectionAlertConfigDTO notificationConfig, Collection<AnomalyResult> anomalies) {
+  protected Map<String, Object> getTemplateData(DetectionAlertConfigDTO notificationConfig,
+      Collection<AnomalyResult> anomalies) {
     Map<String, Object> templateData = new HashMap<>();
 
-    DateTimeZone timeZone = DateTimeZone.forTimeZone(TimeZone.getTimeZone(DEFAULT_TIME_ZONE));
+    // DateTimeZone timeZone =
+    // DateTimeZone.forTimeZone(TimeZone.getTimeZone(DEFAULT_TIME_ZONE));
     List<MergedAnomalyResultDTO> mergedAnomalyResults = new ArrayList<>();
 
     // Calculate start and end time of the anomalies
@@ -210,7 +214,8 @@ public abstract class BaseNotificationContent implements NotificationContent {
       }
     }
 
-    PrecisionRecallEvaluator precisionRecallEvaluator = new PrecisionRecallEvaluator(new DummyAlertFilter(), mergedAnomalyResults);
+    PrecisionRecallEvaluator precisionRecallEvaluator = new PrecisionRecallEvaluator(new DummyAlertFilter(),
+        mergedAnomalyResults);
 
     templateData.put("anomalyCount", anomalies.size());
     templateData.put("startTime", getDateString(startTime));
@@ -224,7 +229,7 @@ public abstract class BaseNotificationContent implements NotificationContent {
     templateData.put("alertConfigName", notificationConfig.getName());
     templateData.put("includeSummary", includeSummary);
     templateData.put("reportGenerationTimeMillis", System.currentTimeMillis());
-    if(precisionRecallEvaluator.getTotalResponses() > 0) {
+    if (precisionRecallEvaluator.getTotalResponses() > 0) {
       templateData.put("precision", precisionRecallEvaluator.getPrecisionInResponse());
       templateData.put("recall", precisionRecallEvaluator.getRecall());
       templateData.put("falseNegative", precisionRecallEvaluator.getFalseNegativeRate());
@@ -248,7 +253,7 @@ public abstract class BaseNotificationContent implements NotificationContent {
     if (expected == 0) {
       return 1d;
     } else {
-      return current/expected - 1;
+      return current / expected - 1;
     }
   }
 
@@ -264,7 +269,7 @@ public abstract class BaseNotificationContent implements NotificationContent {
    */
   protected String getTimezoneString(DateTimeZone dateTimeZone) {
     TimeZone tz = TimeZone.getTimeZone(dateTimeZone.getID());
-    return tz.getDisplayName(true, 0);
+    return tz.getDisplayName(false, 0);
   }
 
   /**
@@ -309,7 +314,8 @@ public abstract class BaseNotificationContent implements NotificationContent {
   }
 
   /**
-   * Returns a human readable lift value to be displayed in the notification templates
+   * Returns a human readable lift value to be displayed in the notification
+   * templates
    */
   protected static String getFormattedLiftValue(MergedAnomalyResultDTO anomaly, double lift) {
     String liftValue = String.format(PERCENTAGE_FORMAT, lift * 100);
@@ -320,15 +326,15 @@ public abstract class BaseNotificationContent implements NotificationContent {
     }
 
     return liftValue;
-   }
+  }
 
   /**
-   * The lift value for an SLA anomaly is delay from the configured sla. (Ex: 2 days & 3 hours)
+   * The lift value for an SLA anomaly is delay from the configured sla. (Ex: 2
+   * days & 3 hours)
    */
   protected static String getFormattedSLALiftValue(MergedAnomalyResultDTO anomaly) {
-    if (!anomaly.getType().equals(AnomalyType.DATA_SLA)
-        || anomaly.getProperties() == null || anomaly.getProperties().isEmpty()
-        || !anomaly.getProperties().containsKey("sla")
+    if (!anomaly.getType().equals(AnomalyType.DATA_SLA) || anomaly.getProperties() == null
+        || anomaly.getProperties().isEmpty() || !anomaly.getProperties().containsKey("sla")
         || !anomaly.getProperties().containsKey("datasetLastRefreshTime")) {
       return Strings.EMPTY;
     }
@@ -354,9 +360,8 @@ public abstract class BaseNotificationContent implements NotificationContent {
    * The predicted value for an SLA anomaly is the configured sla. (Ex: 2_DAYS)
    */
   protected static String getSLAPredictedValue(MergedAnomalyResultDTO anomaly) {
-    if (!anomaly.getType().equals(AnomalyType.DATA_SLA)
-        || anomaly.getProperties() == null || anomaly.getProperties().isEmpty()
-        || !anomaly.getProperties().containsKey("sla")) {
+    if (!anomaly.getType().equals(AnomalyType.DATA_SLA) || anomaly.getProperties() == null
+        || anomaly.getProperties().isEmpty() || !anomaly.getProperties().containsKey("sla")) {
       return "-";
     }
 
@@ -391,6 +396,7 @@ public abstract class BaseNotificationContent implements NotificationContent {
     }
     return current;
   }
+
   /**
    * Convert Feedback value to user readable values
    */
@@ -416,17 +422,21 @@ public abstract class BaseNotificationContent implements NotificationContent {
   }
 
   /**
-   * Taking advantage of event data provider, extract the events around the given start and end time
-   * @param eventTypes the list of event types
-   * @param start the start time of the event, preEventCrawlOffset is added before the given date time
-   * @param end the end time of the event, postEventCrawlOffset is added after the given date time
-   * @param metricName the affected metric name
-   * @param serviceName the affected service name
+   * Taking advantage of event data provider, extract the events around the given
+   * start and end time
+   * 
+   * @param eventTypes       the list of event types
+   * @param start            the start time of the event, preEventCrawlOffset is
+   *                         added before the given date time
+   * @param end              the end time of the event, postEventCrawlOffset is
+   *                         added after the given date time
+   * @param metricName       the affected metric name
+   * @param serviceName      the affected service name
    * @param targetDimensions the affected dimensions
    * @return a list of related events
    */
-  protected List<EventDTO> getRelatedEvents(List<EventType> eventTypes, DateTime start, DateTime end
-      , String metricName, String serviceName, Map<String, List<String>> targetDimensions) {
+  protected List<EventDTO> getRelatedEvents(List<EventType> eventTypes, DateTime start, DateTime end, String metricName,
+      String serviceName, Map<String, List<String>> targetDimensions) {
     List<EventDTO> relatedEvents = new ArrayList<>();
     for (EventType eventType : eventTypes) {
       relatedEvents.addAll(getHolidayEvents(start, end, targetDimensions));
@@ -452,9 +462,13 @@ public abstract class BaseNotificationContent implements NotificationContent {
   }
 
   /**
-   * Taking advantage of event data provider, extract the events around the given start and end time
-   * @param start the start time of the event, preEventCrawlOffset is added before the given date time
-   * @param end the end time of the event, postEventCrawlOffset is added after the given date time
+   * Taking advantage of event data provider, extract the events around the given
+   * start and end time
+   * 
+   * @param start            the start time of the event, preEventCrawlOffset is
+   *                         added before the given date time
+   * @param end              the end time of the event, postEventCrawlOffset is
+   *                         added after the given date time
    * @param targetDimensions the affected dimensions
    * @return a list of related events
    */
@@ -465,13 +479,15 @@ public abstract class BaseNotificationContent implements NotificationContent {
     eventFilter.setEndTime(end.plus(postEventCrawlOffset).getMillis());
     eventFilter.setTargetDimensionMap(targetDimensions);
 
-    LOG.info("Fetching holidays with preEventCrawlOffset {} and postEventCrawlOffset {}", preEventCrawlOffset, postEventCrawlOffset);
+    LOG.info("Fetching holidays with preEventCrawlOffset {} and postEventCrawlOffset {}", preEventCrawlOffset,
+        postEventCrawlOffset);
     return new HolidayEventProvider().getEvents(eventFilter);
   }
 
   /**
    * Get the value of matched filter key of given anomaly result
-   * @param anomaly a MergedAnomalyResultDTO instance
+   * 
+   * @param anomaly   a MergedAnomalyResultDTO instance
    * @param matchText a text to be matched in the filter keys
    * @return a list of filter values
    */

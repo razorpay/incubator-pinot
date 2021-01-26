@@ -51,8 +51,8 @@ module.exports = function (environment) {
       allowUnsafeRedirect: true,
       providers: {
         "google-oauth2": {
-          apiKey: '"' + process.env.GOOGLE_CLIENT_ID + '"',
-          redirectUri: '"' + process.env.GOOGLE_AUTH_REDIRECT_URL + '"',
+          apiKey: process.env.GOOGLE_CLIENT_ID,
+          redirectUri: process.env.GOOGLE_AUTH_REDIRECT_URL,
           scope: "email profile",
         },
       },

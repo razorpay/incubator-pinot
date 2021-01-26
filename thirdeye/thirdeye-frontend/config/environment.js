@@ -51,8 +51,8 @@ module.exports = function (environment) {
       allowUnsafeRedirect: true,
       providers: {
         "google-oauth2": {
-          apiKey: process.env.GOOGLE_CLIENT_ID,
-          redirectUri: process.env.GOOGLE_AUTH_REDIRECT_URL,
+          apiKey: "391316638671-qbubq6ip7icqovomv38fpdh4jkbm2c93.apps.googleusercontent.com",
+          redirectUri: "https://thirdeye.concierge.stage.razorpay.in",
           scope: "email profile",
         },
       },

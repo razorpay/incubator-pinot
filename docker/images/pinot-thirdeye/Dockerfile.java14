@@ -38,7 +38,7 @@ COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-dashboard/config/detector-config/* $
 COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-dashboard/config/detector-config/anomaly-functions/* ${TE_HOME}/config/default/detector-config/anomaly-functions/
 COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-dashboard/config/data/* ${TE_HOME}/config/default/data/
 COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-frontend/config/environment.js ${FE_CONFIG_DIR}/
-
+RUN sed -e 's|process.env.GOOGLE_CLIENT_ID|'$GOOGLE_CLIENT_ID'|g' -e 's|process.env.GOOGLE_AUTH_REDIRECT_URL|'$GOOGLE_AUTH_REDIRECT_URL'|g' $FE_CONFIG_DIR/environment.js
 ## Remove the h2db.mv.db
 #RUN rm ${TE_HOME}/config/default/h2db.mv.db 
 

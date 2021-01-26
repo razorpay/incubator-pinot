@@ -39,7 +39,7 @@ services:
       - ./dockerconf/entrypoint_dev.sh:/opt/thirdeye/bin/entrypoint_dev.sh
       - ./thirdeye/thirdeye-dashboard/config/rca.yml:/opt/thirdeye/config/default/rca.yml
       - ./thirdeye/thirdeye-dashboard/config/dashboard.yml:/opt/thirdeye/config/default/dashboard.yml
-      - ./thirdeye/thirdeye-frontend/config/environment.js:/opt/thirdeye/thirdeye-frontend/config/default/environment.js
+      # - ./thirdeye/thirdeye-frontend/config/environment.js:/opt/thirdeye/thirdeye-frontend/config/default/environment.js
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/persistence.yml.tmpl:/opt/thirdeye/config/default/persistence.yml.tmpl
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/data-sources/data-sources-config.yml.tmpl:/opt/thirdeye/config/default/data-sources/data-sources-config.yml.tmpl
       #- ./dockerconf/entrypoint.sh:/opt/thirdeye/bin/entrypoint.sh
@@ -81,7 +81,7 @@ services:
       - ./dockerconf/entrypoint_dev.sh:/opt/thirdeye/bin/entrypoint_dev.sh
       - ./thirdeye/thirdeye-dashboard/config/rca.yml:/opt/thirdeye/config/default/rca.yml
       - ./thirdeye/thirdeye-dashboard/config/dashboard.yml:/opt/thirdeye/config/default/dashboard.yml
-      - ./thirdeye/thirdeye-frontend/config/environment.js:/opt/thirdeye/thirdeye-frontend/config/default/environment.js
+      # - ./thirdeye/thirdeye-frontend/config/environment.js:/opt/thirdeye/thirdeye-frontend/config/default/environment.js
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/persistence.yml.tmpl:/opt/thirdeye/config/default/persistence.yml.tmpl
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/data-sources/data-sources-config.yml.tmpl:/opt/thirdeye/config/default/data-sources/data-sources-config.yml.tmpl
       #- ./dockerconf/entrypoint.sh:/opt/thirdeye/bin/entrypoint.sh

@@ -48,12 +48,17 @@ services:
     environment:
       CONFIG_DIR: /opt/thirdeye/config/default
       FE_CONFIG_DIR: /opt/thirdeye/thirdeye-frontend/config/default
-      MYSQL_HOSTNAME: thirdeye_mysql
-      MYSQL_PORT: 3306
-      THIRDEYE_DATABASE: thirdeye
-      MYSQL_PASSWORD: root
-      DRUID_USER: admin
-      DRUID_PWD: admin
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_HOSTNAME: ${MYSQL_HOSTNAME}
+      MYSQL_PORT: ${MYSQL_PORT}
+      THIRDEYE_DATABASE: ${THIRDEYE_DATABASE}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      DRUID_USERNAME: ${DRUID_USERNAME}
+      DRUID_PASSWORD: ${DRUID_PASSWORD}
+      POSTGRES_HOSTNAME: ${POSTGRES_HOSTNAME}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+      POSTGRESQL_PASSWORD: ${POSTGRESQL_PASSWORD}
       APP_MODE: prod
       JMX_CONFIG: "-Xms1G -Xmx3G"
       SLACK_TOKEN: ${SLACK_TOKEN}
@@ -92,12 +97,17 @@ services:
     environment:
       CONFIG_DIR: /opt/thirdeye/config/default
       FE_CONFIG_DIR: /opt/thirdeye/thirdeye-frontend/config/default
-      MYSQL_HOSTNAME: thirdeye_mysql
-      MYSQL_PORT: 3306
-      THIRDEYE_DATABASE: thirdeye
-      MYSQL_PASSWORD: root
-      DRUID_USER: admin
-      DRUID_PWD: admin
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_HOSTNAME: ${MYSQL_HOSTNAME}
+      MYSQL_PORT: ${MYSQL_PORT}
+      THIRDEYE_DATABASE: ${THIRDEYE_DATABASE}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      DRUID_USERNAME: ${DRUID_USERNAME}
+      DRUID_PASSWORD: ${DRUID_PASSWORD}
+      POSTGRES_HOSTNAME: ${POSTGRES_HOSTNAME}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+      POSTGRESQL_PASSWORD: ${POSTGRESQL_PASSWORD}
       APP_MODE: prod
       JMX_CONFIG: "-Xms1G -Xmx3G"
       SLACK_TOKEN: ${SLACK_TOKEN}

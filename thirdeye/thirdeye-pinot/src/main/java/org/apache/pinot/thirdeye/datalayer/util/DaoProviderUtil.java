@@ -34,6 +34,7 @@ import org.apache.pinot.thirdeye.datalayer.ThirdEyePersistenceModule;
 import org.apache.pinot.thirdeye.datalayer.bao.jdbc.AbstractManagerImpl;
 import org.apache.pinot.thirdeye.datalayer.dto.AbstractDTO;
 import org.apache.pinot.thirdeye.datalayer.util.PersistenceConfig.DatabaseConfiguration;
+import org.apache.pinot.thirdeye.util.CustomConfigReader;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.h2.store.fs.FileUtils;
 import org.slf4j.Logger;
@@ -41,86 +42,85 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DaoProviderUtil {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DaoProviderUtil.class);
+	private static final Logger LOG = LoggerFactory.getLogger(DaoProviderUtil.class);
 
-  private static final String DEFAULT_DATABASE_PATH = "jdbc:h2:./config/h2db";
-  private static final String DEFAULT_DATABASE_FILE = "./config/h2db.mv.db";
+	private static final String DEFAULT_DATABASE_PATH = "jdbc:h2:./config/h2db";
+	private static final String DEFAULT_DATABASE_FILE = "./config/h2db.mv.db";
 
-  private static Injector injector;
+	private static Injector injector;
 
-  public static void init(File localConfigFile) {
-    final PersistenceConfig configuration = readPersistenceConfig(localConfigFile);
-    final DataSource dataSource = createDataSource(configuration);
+	public static void init(File localConfigFile) {
+		final PersistenceConfig configuration = readPersistenceConfig(localConfigFile);
+		final DataSource dataSource = createDataSource(configuration);
 
-    // create schema for default database
-    createSchemaIfReqd(dataSource, configuration.getDatabaseConfiguration());
+		// create schema for default database
+		createSchemaIfReqd(dataSource, configuration.getDatabaseConfiguration());
 
-    init(dataSource);
-  }
+		init(dataSource);
+	}
 
-  private static void createSchemaIfReqd(
-      final DataSource dataSource,
-      final DatabaseConfiguration dbConfig) {
-    if (dbConfig.getUrl().equals(DEFAULT_DATABASE_PATH)
-        && !FileUtils.exists(DEFAULT_DATABASE_FILE)) {
-      try {
-        LOG.info("Creating database schema for default URL '{}'", DEFAULT_DATABASE_PATH);
-        Connection conn = dataSource.getConnection();
-        final ScriptRunner scriptRunner = new ScriptRunner(conn, false);
-        scriptRunner.setDelimiter(";");
+	private static void createSchemaIfReqd(final DataSource dataSource, final DatabaseConfiguration dbConfig) {
+		if (dbConfig.getUrl().equals(DEFAULT_DATABASE_PATH) && !FileUtils.exists(DEFAULT_DATABASE_FILE)) {
+			try {
+				LOG.info("Creating database schema for default URL '{}'", DEFAULT_DATABASE_PATH);
+				Connection conn = dataSource.getConnection();
+				final ScriptRunner scriptRunner = new ScriptRunner(conn, false);
+				scriptRunner.setDelimiter(";");
 
-        InputStream createSchema = DaoProviderUtil.class
-            .getResourceAsStream("/schema/create-schema.sql");
-        scriptRunner.runScript(new InputStreamReader(createSchema));
-      } catch (Exception e) {
-        LOG.error("Could not create database schema. Attempting to use existing.", e);
-      }
-    } else {
-      LOG.info("Using existing database at '{}'", dbConfig.getUrl());
-    }
-  }
+				InputStream createSchema = DaoProviderUtil.class.getResourceAsStream("/schema/create-schema.sql");
+				scriptRunner.runScript(new InputStreamReader(createSchema));
+			} catch (Exception e) {
+				LOG.error("Could not create database schema. Attempting to use existing.", e);
+			}
+		} else {
+			LOG.info("Using existing database at '{}'", dbConfig.getUrl());
+		}
+	}
 
-  private static DataSource createDataSource(final PersistenceConfig configuration) {
-    final DataSource dataSource = new DataSource();
-    dataSource.setInitialSize(10);
-    dataSource.setDefaultAutoCommit(false);
-    dataSource.setMaxActive(100);
-    dataSource.setUsername(configuration.getDatabaseConfiguration().getUser());
-    dataSource.setPassword(configuration.getDatabaseConfiguration().getPassword());
-    dataSource.setUrl(configuration.getDatabaseConfiguration().getUrl());
-    dataSource.setDriverClassName(configuration.getDatabaseConfiguration().getDriver());
+	private static DataSource createDataSource(final PersistenceConfig configuration) {
+		final DataSource dataSource = new DataSource();
+		dataSource.setInitialSize(10);
+		dataSource.setDefaultAutoCommit(false);
+		dataSource.setMaxActive(100);
 
-    dataSource.setValidationQuery("select 1");
-    dataSource.setTestWhileIdle(true);
-    dataSource.setTestOnBorrow(true);
-    // when returning connection to pool
-    dataSource.setTestOnReturn(true);
-    dataSource.setRollbackOnReturn(true);
+		CustomConfigReader ccr = new CustomConfigReader();
+		String userName = ccr.readEnv(configuration.getDatabaseConfiguration().getUser());
+		dataSource.setUsername(userName);
+		String password = ccr.readEnv(configuration.getDatabaseConfiguration().getPassword());
+		dataSource.setPassword(password);
+		String url = ccr.readEnv(configuration.getDatabaseConfiguration().getUrl());
+		dataSource.setUrl(url);
 
-    // Timeout before an abandoned(in use) connection can be removed.
-    dataSource.setRemoveAbandonedTimeout(600_000);
-    dataSource.setRemoveAbandoned(true);
-    return dataSource;
-  }
+		dataSource.setDriverClassName(configuration.getDatabaseConfiguration().getDriver());
 
-  public static void init(DataSource dataSource) {
-    injector = Guice.createInjector(new ThirdEyePersistenceModule(dataSource));
-  }
+		dataSource.setValidationQuery("select 1");
+		dataSource.setTestWhileIdle(true);
+		dataSource.setTestOnBorrow(true);
+		// when returning connection to pool
+		dataSource.setTestOnReturn(true);
+		dataSource.setRollbackOnReturn(true);
 
-  public static PersistenceConfig readPersistenceConfig(File configFile) {
-    YamlConfigurationFactory<PersistenceConfig> factory = new YamlConfigurationFactory<>(
-        PersistenceConfig.class,
-        Validation.buildDefaultValidatorFactory().getValidator(),
-        Jackson.newObjectMapper(),
-        "");
-    try {
-      return factory.build(configFile);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
+		// Timeout before an abandoned(in use) connection can be removed.
+		dataSource.setRemoveAbandonedTimeout(600_000);
+		dataSource.setRemoveAbandoned(true);
+		return dataSource;
+	}
 
-  public static <T extends AbstractManagerImpl<? extends AbstractDTO>> T getInstance(Class<T> c) {
-    return injector.getInstance(c);
-  }
+	public static void init(DataSource dataSource) {
+		injector = Guice.createInjector(new ThirdEyePersistenceModule(dataSource));
+	}
+
+	public static PersistenceConfig readPersistenceConfig(File configFile) {
+		YamlConfigurationFactory<PersistenceConfig> factory = new YamlConfigurationFactory<>(PersistenceConfig.class,
+				Validation.buildDefaultValidatorFactory().getValidator(), Jackson.newObjectMapper(), "");
+		try {
+			return factory.build(configFile);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static <T extends AbstractManagerImpl<? extends AbstractDTO>> T getInstance(Class<T> c) {
+		return injector.getInstance(c);
+	}
 }

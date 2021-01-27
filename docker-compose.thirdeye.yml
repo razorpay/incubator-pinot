@@ -48,10 +48,10 @@ services:
     environment:
       CONFIG_DIR: /opt/thirdeye/config/default
       FE_CONFIG_DIR: /opt/thirdeye/thirdeye-frontend/config/default
-      MYSQL_USER: ${MYSQL_USER}
       MYSQL_HOSTNAME: ${MYSQL_HOSTNAME}
       MYSQL_PORT: ${MYSQL_PORT}
       THIRDEYE_DATABASE: ${THIRDEYE_DATABASE}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       DRUID_USERNAME: ${DRUID_USERNAME}
       DRUID_PASSWORD: ${DRUID_PASSWORD}
@@ -98,10 +98,10 @@ services:
     environment:
       CONFIG_DIR: /opt/thirdeye/config/default
       FE_CONFIG_DIR: /opt/thirdeye/thirdeye-frontend/config/default
-      MYSQL_USER: ${MYSQL_USER}
       MYSQL_HOSTNAME: ${MYSQL_HOSTNAME}
       MYSQL_PORT: ${MYSQL_PORT}
       THIRDEYE_DATABASE: ${THIRDEYE_DATABASE}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       DRUID_USERNAME: ${DRUID_USERNAME}
       DRUID_PASSWORD: ${DRUID_PASSWORD}

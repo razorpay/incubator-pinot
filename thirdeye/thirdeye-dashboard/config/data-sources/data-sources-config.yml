@@ -6,7 +6,7 @@ dataSourceConfigs:
       MySQL:
         - db:
             mysql: jdbc:mysql://?$MYSQL_HOSTNAME:?$MYSQL_PORT/?$THIRDEYE_DATABASE?allowPublicKeyRetrieval=true&
-          user: ?$MYSQL_USER
+          user: ?$MYSQL_USERNAME
           password: ?$MYSQL_PASSWORD
           driver: com.mysql.cj.jdbc.Driver
       PostgreSQL:

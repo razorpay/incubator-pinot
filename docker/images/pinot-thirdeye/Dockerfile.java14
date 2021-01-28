@@ -40,6 +40,7 @@ COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-dashboard/config/data/* ${TE_HOME}/c
 COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-frontend/config/environment.js ${FE_CONFIG_DIR}/
 ## Remove the h2db.mv.db
 #RUN rm ${TE_HOME}/config/default/h2db.mv.db 
+COPY ${TE_GITHUB_SRC_DIR}/thirdeye/thirdeye-dashboard/config/persistence.yml ${TE_HOME}/config/default/
 
 EXPOSE 1426 1427
 WORKDIR ${TE_HOME}

@@ -233,9 +233,9 @@ public class SqlResponseCacheLoader extends CacheLoader<SqlQuery, ThirdEyeResult
 			for (Map<String, Object> objMap : druidMapList) {
 				Map<String, String> dbNameToURLMap = (Map) objMap.get(DB);
 				String druidUser = (String) objMap.get(USER);
-				druidUser = ccr.readEnv(druidUser);
+				// druidUser = ccr.readEnv(druidUser);
 				String druidPassword = getPassword(objMap);
-				druidPassword = ccr.readEnv(druidPassword);
+				// druidPassword = ccr.readEnv(druidPassword);
 				for (Map.Entry<String, String> entry : dbNameToURLMap.entrySet()) {
 					DataSource dataSource = new DataSource();
 					dataSource.setInitialSize(INIT_CONNECTIONS);
@@ -243,8 +243,7 @@ public class SqlResponseCacheLoader extends CacheLoader<SqlQuery, ThirdEyeResult
 					dataSource.setUsername(druidUser);
 					dataSource.setPassword(druidPassword);
 					dataSource.setUrl(entry.getValue());
-					String url = ccr.readEnv(entry.getValue());
-					dataSource.setUrl(url);
+					// String url = ccr.readEnv(entry.getValue());
 
 					// Timeout before an abandoned(in use) connection can be removed.
 					dataSource.setRemoveAbandonedTimeout(ABANDONED_TIMEOUT);

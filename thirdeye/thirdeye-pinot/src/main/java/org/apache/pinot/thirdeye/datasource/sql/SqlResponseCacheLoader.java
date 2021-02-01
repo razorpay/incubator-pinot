@@ -401,6 +401,10 @@ public class SqlResponseCacheLoader extends CacheLoader<SqlQuery, ThirdEyeResult
 
 	@Override
 	public ThirdEyeResultSetGroup load(SqlQuery SQLQuery) throws Exception {
+		LOG.info("Running SQL: " + SQLQuery.getDbName());
+		LOG.info("getMetric SQL: " + SQLQuery.getMetric());
+		LOG.info("getQuery SQL: " + SQLQuery.getQuery());
+		LOG.info("getSourceName SQL: " + SQLQuery.getSourceName());
 		String sourceName = SQLQuery.getSourceName();
 		DataSource dataSource = null;
 		if (sourceName.equals(PRESTO)) {

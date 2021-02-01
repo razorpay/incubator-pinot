@@ -9,8 +9,8 @@ dataSourceConfigs:
           user: ?$MYSQL_USERNAME
           password: ?$MYSQL_PASSWORD
           driver: com.mysql.cj.jdbc.Driver
-      PostgreSQL:
-        - db:
-            postgres: jdbc:postgresql://?$POSTGRES_HOSTNAME:?$POSTGRES_PORT/?$THIRDEYE_POSTGRES_DATABASE
-          user: ?$THIRDEYE_POSTGRES_USER
-          password: ?$THIRDEYE_POSTGRES_PASSWORD
+      # PostgreSQL:
+      #   - db:
+      #       postgres: jdbc:postgresql://?$POSTGRES_HOSTNAME:?$POSTGRES_PORT/?$THIRDEYE_POSTGRES_DATABASE
+      #     user: ?$THIRDEYE_POSTGRES_USER
+      #     password: ?$THIRDEYE_POSTGRES_PASSWORD

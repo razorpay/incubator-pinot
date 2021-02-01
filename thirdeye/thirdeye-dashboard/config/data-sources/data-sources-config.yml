@@ -14,3 +14,8 @@ dataSourceConfigs:
       #       postgres: jdbc:postgresql://?$POSTGRES_HOSTNAME:?$POSTGRES_PORT/?$THIRDEYE_POSTGRES_DATABASE
       #     user: ?$THIRDEYE_POSTGRES_USER
       #     password: ?$THIRDEYE_POSTGRES_PASSWORD
+      Druid:
+        - db:
+            druid: jdbc:avatica:remote:url=?$DRUID_URL
+          user: ?$DRUID_USERNAME
+          password: ?$DRUID_PASSWORD

@@ -9,6 +9,7 @@ dataSourceConfigs:
           user: ?$MYSQL_USERNAME
           password: ?$MYSQL_PASSWORD
           driver: com.mysql.cj.jdbc.Driver
+      # PostgreSQL is for local deployment
       # PostgreSQL:
       #   - db:
       #       postgres: jdbc:postgresql://?$POSTGRES_HOSTNAME:?$POSTGRES_PORT/?$THIRDEYE_POSTGRES_DATABASE

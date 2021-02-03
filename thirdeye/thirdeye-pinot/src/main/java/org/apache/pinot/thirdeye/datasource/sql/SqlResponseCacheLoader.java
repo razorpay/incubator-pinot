@@ -244,9 +244,6 @@ public class SqlResponseCacheLoader extends CacheLoader<SqlQuery, ThirdEyeResult
 					dataSource.setPassword(druidPassword);
 					String url = ccr.readEnv(entry.getValue());
 					dataSource.setUrl(url);
-					LOG.info("druidUser : " + druidUser);
-					LOG.info("druidPassword : " + druidPassword);
-					LOG.info("url : " + url);
 					// Timeout before an abandoned(in use) connection can be removed.
 					dataSource.setRemoveAbandonedTimeout(ABANDONED_TIMEOUT);
 					dataSource.setRemoveAbandoned(true);
@@ -403,10 +400,6 @@ public class SqlResponseCacheLoader extends CacheLoader<SqlQuery, ThirdEyeResult
 
 	@Override
 	public ThirdEyeResultSetGroup load(SqlQuery SQLQuery) throws Exception {
-		LOG.info("getDbName SQL: " + SQLQuery.getDbName());
-		LOG.info("getMetric SQL: " + SQLQuery.getMetric());
-		LOG.info("getQuery SQL: " + SQLQuery.getQuery());
-		LOG.info("getSourceName SQL: " + SQLQuery.getSourceName());
 		String sourceName = SQLQuery.getSourceName();
 		DataSource dataSource = null;
 		if (sourceName.equals(PRESTO)) {
@@ -427,7 +420,6 @@ public class SqlResponseCacheLoader extends CacheLoader<SqlQuery, ThirdEyeResult
 
 		String sqlQuery = SQLQuery.getQuery();
 		LOG.info("Running SQL: " + sqlQuery);
-		LOG.info("dataSource SQL: " + dataSource);
 		try (Connection conn = dataSource.getConnection();
 				Statement stmt = conn.createStatement();
 				ResultSet rs = stmt.executeQuery(sqlQuery)) {

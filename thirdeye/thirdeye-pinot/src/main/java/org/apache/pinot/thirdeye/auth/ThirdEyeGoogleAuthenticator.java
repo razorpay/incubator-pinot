@@ -55,6 +55,10 @@ public class ThirdEyeGoogleAuthenticator implements Authenticator<ThirdEyeCreden
 		String clientId = configMap.get("clientId");
 		String clientSecret = configMap.get("clientSecret");
 		String redirectURL = configMap.get("redirectURL");
+		LOG.info("tokenURL {}",tokenURL);
+		LOG.info("clientId {}",clientId);
+		LOG.info("clientSecret {}",clientSecret);
+		LOG.info("redirectURL {}",redirectURL);
 		GoogleTokenResponse tokenResponse = null;
 		try {
 			tokenResponse = new GoogleAuthorizationCodeTokenRequest(new NetHttpTransport(),

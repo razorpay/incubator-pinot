@@ -48,7 +48,7 @@ jobs:
           repository: razorpay/thirdeye
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tags: stage/${{ github.sha }}
+          tags: ${{ stage/github.sha }}
       - name: Build Prod Thirdeye
         run: cd thirdeye && ./install.sh prod && cd ..|| exit 1
       - name: Prod Docker Push Dockerhub
@@ -58,5 +58,5 @@ jobs:
           repository: razorpay/thirdeye
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tags: prod/${{ github.sha }}
+          tags: ${{ prod/github.sha }}
 

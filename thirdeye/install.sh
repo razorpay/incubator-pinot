@@ -5,7 +5,7 @@ cd ..
 mvn install -DskipTests -pl pinot-common,pinot-core,pinot-spi,pinot-clients -am -Pbuild-shaded-jar || exit 1
 cd thirdeye
 
-PROFILES_ARG=""
+# PROFILES_ARG=""
 
 # if [ $# -ne 0 ]
 # then

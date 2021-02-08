@@ -61,7 +61,7 @@ public class ThirdEyeGoogleAuthenticator implements Authenticator<ThirdEyeCreden
 					JacksonFactory.getDefaultInstance(), tokenURL, clientId, clientSecret, authCode, redirectURL)
 							.execute();
 		} catch (IOException e) {
-			LOG.error("Invalid google token response");
+			LOG.error("Invalid google token response in googleAuthenticate");
 			e.printStackTrace();
 		}
 

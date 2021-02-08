@@ -54,7 +54,7 @@ module.exports = function (environment) {
         "google-oauth2": {
           apiKey:
             "google-apikey",
-          redirectUri: "thirdeye-redirect-url",
+          redirectUri: "thirdeye-redirecturl",
           scope: "email profile",
         },
       },

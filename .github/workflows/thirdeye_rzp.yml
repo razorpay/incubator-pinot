@@ -45,18 +45,18 @@ jobs:
         uses: docker/build-push-action@v1
         with:
           dockerfile: docker/images/pinot-thirdeye/Dockerfile.java14
-          repository: razorpay/thirdeye/stage
+          repository: razorpay/thirdeye
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tags: ${{ github.sha }}
+          tags: ${{ stage/github.sha }}
       - name: Build Prod Thirdeye
         run: cd thirdeye && ./install.sh prod && cd ..|| exit 1
       - name: Prod Docker Push Dockerhub
         uses: docker/build-push-action@v1
         with:
           dockerfile: docker/images/pinot-thirdeye/Dockerfile.java14
-          repository: razorpay/thirdeye/prod
+          repository: razorpay/thirdeye
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tags: ${{ github.sha }}
+          tags: ${{ prod/github.sha }}
 

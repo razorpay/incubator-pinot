@@ -36,7 +36,6 @@ cd thirdeye
 # PROFILES_ARG=${PROFILES_ARG%,}
 # fi
 
-
 echo "*******************************************************"
 echo "Building ThirdEye"
 echo "*******************************************************"

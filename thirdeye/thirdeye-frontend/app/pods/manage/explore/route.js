@@ -19,10 +19,13 @@ export default Route.extend(AuthenticatedRouteMixin, {
   async model(params) {
     const alertId = params.alert_id;
     const analysisRange = get(this, 'analysisRange');
+
     const getProps = {
-      method: 'get',
+      method: "get",
       headers: { 'content-type': 'application/json' }
     };
+
+  
     const notifications = get(this, 'notifications');
 
     //detection alert fetch

@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
-<project
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-    xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.pinot.thirdeye</groupId>
@@ -10,9 +8,7 @@
   </parent>
   <artifactId>thirdeye-pinot</artifactId>
   <url>http://maven.apache.org</url>
-  <properties>
-
-  </properties>
+  <properties></properties>
 
   <dependencies>
     <dependency>
@@ -252,6 +248,13 @@
       <artifactId>hk2-utils</artifactId>
     </dependency>
 
+    <!-- Google client API -->
+    <dependency>
+      <groupId>com.google.api-client</groupId>
+      <artifactId>google-api-client</artifactId>
+      <version>1.31.1</version>
+    </dependency>
+
     <!-- test dependencies -->
     <dependency>
       <groupId>org.mockito</groupId>
@@ -338,12 +341,12 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
     </dependency>
-    	<!-- https://mvnrepository.com/artifact/com.slack.api/slack-api-client -->
-		<dependency>
-			<groupId>com.slack.api</groupId>
-			<artifactId>slack-api-client</artifactId>
-			<version>1.2.1</version>
-		</dependency>
+    <!-- https://mvnrepository.com/artifact/com.slack.api/slack-api-client -->
+    <dependency>
+      <groupId>com.slack.api</groupId>
+      <artifactId>slack-api-client</artifactId>
+      <version>1.2.1</version>
+    </dependency>
 
     <!-- yaml validator -->
     <dependency>
@@ -354,31 +357,31 @@
   </dependencies>
 
   <profiles>
-  <profile>
-    <id>bigquery</id>
-    <dependencies>
-      <dependency>
-        <groupId>com.google.auth</groupId>
-        <artifactId>google-auth-library-oauth2-http</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>com.google.api</groupId>
-        <artifactId>gax</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>com.google.apis</groupId>
-        <artifactId>google-api-services-bigquery</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.avro</groupId>
-        <artifactId>avro</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>com.simba.googlebigquery</groupId>
-        <artifactId>jdbc42</artifactId>
-      </dependency>
-    </dependencies>
-  </profile>
+    <profile>
+      <id>bigquery</id>
+      <dependencies>
+        <dependency>
+          <groupId>com.google.auth</groupId>
+          <artifactId>google-auth-library-oauth2-http</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.google.api</groupId>
+          <artifactId>gax</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.google.apis</groupId>
+          <artifactId>google-api-services-bigquery</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.simba.googlebigquery</groupId>
+          <artifactId>jdbc42</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
   <build>

@@ -18,8 +18,6 @@
 # under the License.
 #
 
-#set -euo pipefail
-
 app_type=$1
 if [[ "${app_type}" == "frontend" ]]; then
 echo "Starting TE Frontend"

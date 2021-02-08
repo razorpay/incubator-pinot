@@ -20,7 +20,25 @@
 package org.apache.pinot.thirdeye.dashboard.resources.v2;
 
 import static org.apache.pinot.thirdeye.auth.ThirdEyeAuthFilter.AUTH_TOKEN_NAME;
+
+import java.io.IOException;
 import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.pinot.thirdeye.auth.ThirdEyeAuthFilter;
 import org.apache.pinot.thirdeye.auth.ThirdEyeCredentials;
 import org.apache.pinot.thirdeye.auth.ThirdEyePrincipal;
@@ -29,127 +47,132 @@ import org.apache.pinot.thirdeye.datalayer.dto.SessionDTO;
 import org.apache.pinot.thirdeye.datalayer.pojo.SessionBean;
 import org.apache.pinot.thirdeye.datalayer.util.Predicate;
 import org.apache.pinot.thirdeye.datasource.DAORegistry;
-import io.dropwizard.auth.Authenticator;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+
+import io.dropwizard.auth.Authenticator;
 
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {
-  private static final Logger LOG = LoggerFactory.getLogger(AuthResource.class);
-  private final DAORegistry DAO_REGISTRY = DAORegistry.getInstance();
+	private static final Logger LOG = LoggerFactory.getLogger(AuthResource.class);
+	private final DAORegistry DAO_REGISTRY = DAORegistry.getInstance();
 
-  private static final int DEFAULT_VALID_DAYS_VALUE = 90;
-  private final Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> authenticator;
-  private final long cookieTTL;
-  private final SessionManager sessionDAO;
-  private final Random random;
+	private static final int DEFAULT_VALID_DAYS_VALUE = 90;
+	private final Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> authenticator;
+	private final long cookieTTL;
+	private final SessionManager sessionDAO;
+	private final Random random;
 
-  public AuthResource(Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> authenticator,
-      long cookieTTL) {
-    this.authenticator = authenticator;
-    this.cookieTTL = cookieTTL;
-    this.sessionDAO = DAO_REGISTRY.getSessionDAO();
-    this.random = new Random();
-    this.random.setSeed(System.currentTimeMillis());
-  }
+	public AuthResource(Authenticator<ThirdEyeCredentials, ThirdEyePrincipal> authenticator, long cookieTTL) {
+		this.authenticator = authenticator;
+		this.cookieTTL = cookieTTL;
+		this.sessionDAO = DAO_REGISTRY.getSessionDAO();
+		this.random = new Random();
+		this.random.setSeed(System.currentTimeMillis());
+	}
 
-  /**
-   * Create service token for a service.
-   *
-   * @param service the service
-   * @param validDays the number of valid days
-   * @return the token
-   */
-  @Path("/create-token")
-  @POST
-  public Response createServiceToken(@QueryParam("service") @NotNull String service, @QueryParam("validDays") Integer validDays){
-    String serviceToken = generateSessionKey(service);
-    SessionDTO sessionDTO = new SessionDTO();
-    sessionDTO.setSessionKey(serviceToken);
-    sessionDTO.setPrincipal(service);
-    sessionDTO.setPrincipalType(SessionBean.PrincipalType.SERVICE);
-    if (validDays == null){
-      validDays = DEFAULT_VALID_DAYS_VALUE;
-    }
-    sessionDTO.setExpirationTime(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(validDays));
+	/**
+	 * Create service token for a service.
+	 *
+	 * @param service   the service
+	 * @param validDays the number of valid days
+	 * @return the token
+	 */
+	@Path("/create-token")
+	@POST
+	public Response createServiceToken(@QueryParam("service") @NotNull String service,
+			@QueryParam("validDays") Integer validDays) {
+		String serviceToken = generateSessionKey(service);
+		SessionDTO sessionDTO = new SessionDTO();
+		sessionDTO.setSessionKey(serviceToken);
+		sessionDTO.setPrincipal(service);
+		sessionDTO.setPrincipalType(SessionBean.PrincipalType.SERVICE);
+		if (validDays == null) {
+			validDays = DEFAULT_VALID_DAYS_VALUE;
+		}
+		sessionDTO.setExpirationTime(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(validDays));
 
-    this.sessionDAO.save(sessionDTO);
-    return Response.ok(serviceToken).build();
-  }
+		this.sessionDAO.save(sessionDTO);
+		return Response.ok(serviceToken).build();
+	}
 
-  @Path("/authenticate")
-  @POST
-  public Response authenticate(ThirdEyeCredentials credentials) {
-    try {
-      final Optional<ThirdEyePrincipal> optPrincipal = this.authenticator.authenticate(credentials);
-      if (!optPrincipal.isPresent()) {
-        return Response.status(Response.Status.UNAUTHORIZED).build();
-      }
+	@Path("/authenticate")
+	@POST
+	public Response authenticate(ThirdEyeCredentials credentials) {
+		try {
+			final Optional<ThirdEyePrincipal> optPrincipal = this.authenticator.authenticate(credentials);
 
-      final ThirdEyePrincipal principal = optPrincipal.get();
+			if (!optPrincipal.isPresent()) {
+				return Response.status(Response.Status.UNAUTHORIZED).build();
+			}
 
-      String sessionKey = generateSessionKey(principal.getName());
-      SessionDTO sessionDTO = new SessionDTO();
-      sessionDTO.setSessionKey(sessionKey);
-      sessionDTO.setPrincipalType(SessionBean.PrincipalType.USER);
-      sessionDTO.setPrincipal(principal.getName());
-      sessionDTO.setExpirationTime(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(24));
-      this.sessionDAO.save(sessionDTO);
+			final ThirdEyePrincipal principal = optPrincipal.get();
+			SessionDTO sessionDTO = new SessionDTO();
+			// principal.getName() will get userId for google. sessionkey is userId
+			String userNameOrID = principal.getName();
+			sessionDTO.setPrincipal(userNameOrID);
+			String sessionKey = generateSessionKey(userNameOrID);
+			sessionDTO.setSessionKey(sessionKey);
+			sessionDTO.setPrincipalType(SessionBean.PrincipalType.USER);
+			if (principal.getEmailId() != null) {
+				String email = principal.getEmailId();
+				sessionDTO.setPrincipal(email);
+				sessionDTO.setEmailId(principal.getEmailId());
+			}
 
-      NewCookie cookie =
-          new NewCookie(AUTH_TOKEN_NAME, sessionKey, "/", null, null, (int) (this.cookieTTL / 1000), false);
+			sessionDTO.setExpirationTime(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(24));
+			this.sessionDAO.save(sessionDTO);
 
-      return Response.ok(principal).cookie(cookie).build();
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-    return Response.status(Response.Status.UNAUTHORIZED).build();
-  }
-  @Path("/logout")
-  @GET
-  public Response logout() {
-    ThirdEyePrincipal principal = ThirdEyeAuthFilter.getCurrentPrincipal();
+			NewCookie cookie = new NewCookie(AUTH_TOKEN_NAME, sessionKey, "/", null, null,
+					(int) (this.cookieTTL / 1000), false);
 
-    if (principal != null) {
-      // if not logged out already
-      this.sessionDAO.deleteByPredicate(Predicate.EQ("sessionKey", principal.getSessionKey()));
-    }
+			return Response.ok(principal).cookie(cookie).build();
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return Response.status(Response.Status.UNAUTHORIZED).build();
+	}
 
-    NewCookie cookie = new NewCookie(AUTH_TOKEN_NAME, "", "/", null, null, -1, false);
-    return Response.ok().cookie(cookie).build();
-  }
+	@Path("/logout")
+	@GET
+	public Response logout() {
+		ThirdEyePrincipal principal = ThirdEyeAuthFilter.getCurrentPrincipal();
 
-  /**
-   * If there was a valid token, the request interceptor would have set PrincipalContext already.
-   * @return
-   */
-  @GET
-  public Response getPrincipalContext() {
-    // TODO refactor this, use injection
-    ThirdEyePrincipal principal = ThirdEyeAuthFilter.getCurrentPrincipal();
-    if (principal == null) {
-      LOG.error("Could not find a valid user");
-      return Response.status(Response.Status.UNAUTHORIZED).build();
-    }
-    return Response.ok(principal).build();
-  }
+		if (principal != null) {
+			// if not logged out already
+			this.sessionDAO.deleteByPredicate(Predicate.EQ("sessionKey", principal.getSessionKey()));
+		}
 
-  private String generateSessionKey(String principalName) {
-    return DigestUtils.sha256Hex(principalName + this.random.nextLong());
-  }
+		NewCookie cookie = new NewCookie(AUTH_TOKEN_NAME, "", "/", null, null, -1, false);
+		return Response.ok().cookie(cookie).build();
+	}
+
+	/**
+	 * If there was a valid token, the request interceptor would have set
+	 * PrincipalContext already.
+	 * 
+	 * @return
+	 */
+	@GET
+	public Response getPrincipalContext() {
+		// TODO refactor this, use injection
+		ThirdEyePrincipal principal = ThirdEyeAuthFilter.getCurrentPrincipal();
+		if (principal == null) {
+			LOG.error("Could not find a valid user");
+			return Response.status(Response.Status.UNAUTHORIZED).build();
+		}
+		return Response.ok(principal).build();
+	}
+
+	private String generateSessionKey(String principalName) {
+		return DigestUtils.sha256Hex(principalName + this.random.nextLong());
+	}
 
 }

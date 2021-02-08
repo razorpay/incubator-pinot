@@ -33,6 +33,7 @@ export default Route.extend(AuthenticatedRouteMixin, {
     if (anomalyIds) {
       anomalyIds = anomalyIds.split(",");
     }
+
     // query anomalies
     searchResult = searchAnomaly(0, pagesize, anomalyIds ? null : start, anomalyIds ? null : end, anomalyIds);
     return hash({

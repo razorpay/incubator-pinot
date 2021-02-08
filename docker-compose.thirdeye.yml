@@ -35,24 +35,39 @@ services:
       - ./thirdeye/thirdeye-dashboard/config/persistence.yml:/opt/thirdeye/config/default/persistence.yml
       - ./thirdeye/thirdeye-dashboard/config/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
       - ./thirdeye/thirdeye-dashboard/config/detector.yml:/opt/thirdeye/config/default/detector.yml
+      - ./thirdeye/configs/others/jmx_config.yml:/opt/thirdeye/config/default/jmx_config.yml
+      - ./dockerconf/entrypoint_dev.sh:/opt/thirdeye/bin/entrypoint_dev.sh
+      - ./thirdeye/thirdeye-dashboard/config/rca.yml:/opt/thirdeye/config/default/rca.yml
+      - ./thirdeye/thirdeye-dashboard/config/dashboard.yml:/opt/thirdeye/config/default/dashboard.yml
+      # - ./thirdeye/thirdeye-frontend/config/environment.js:/opt/thirdeye/thirdeye-frontend/config/default/environment.js
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/persistence.yml.tmpl:/opt/thirdeye/config/default/persistence.yml.tmpl
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/data-sources/data-sources-config.yml.tmpl:/opt/thirdeye/config/default/data-sources/data-sources-config.yml.tmpl
-      - ./thirdeye/configs/others/jmx_config.yml:/opt/thirdeye/config/default/jmx_config.yml
-        #- ./thirdeye/thirdeye-pinot/config-templates/dev/persistence.yml:/opt/thirdeye/config/default/persistence.yml
-        #- ./thirdeye/thirdeye-pinot/config-templates/dev/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
-      - ./dockerconf/entrypoint_dev.sh:/opt/thirdeye/bin/entrypoint_dev.sh
       #- ./dockerconf/entrypoint.sh:/opt/thirdeye/bin/entrypoint.sh
+      #- ./thirdeye/thirdeye-pinot/config-templates/dev/persistence.yml:/opt/thirdeye/config/default/persistence.yml
+      #- ./thirdeye/thirdeye-pinot/config-templates/dev/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
     environment:
       CONFIG_DIR: /opt/thirdeye/config/default
-      MYSQL_HOSTNAME: thirdeye_mysql
-      MYSQL_PORT: 3306
-      THIRDEYE_DATABASE: thirdeye
-      MYSQL_PASSWORD: root
-      DRUID_USER: admin
-      DRUID_PWD: admin
+      FE_CONFIG_DIR: /opt/thirdeye/thirdeye-frontend/config/default
+      MYSQL_HOSTNAME: ${MYSQL_HOSTNAME}
+      MYSQL_PORT: ${MYSQL_PORT}
+      THIRDEYE_DATABASE: ${THIRDEYE_DATABASE}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      DRUID_URL: ${DRUID_URL}
+      DRUID_USERNAME: ${DRUID_USERNAME}
+      DRUID_PASSWORD: ${DRUID_PASSWORD}
+      # postgres configs are for local deployment
+      POSTGRES_HOSTNAME: ${POSTGRES_HOSTNAME}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      THIRDEYE_POSTGRES_DATABASE: ${THIRDEYE_POSTGRES_DATABASE}
+      THIRDEYE_POSTGRES_USER: ${THIRDEYE_POSTGRES_USER}
+      THIRDEYE_POSTGRES_PASSWORD: ${THIRDEYE_POSTGRES_PASSWORD}
       APP_MODE: prod
       JMX_CONFIG: "-Xms1G -Xmx3G"
       SLACK_TOKEN: ${SLACK_TOKEN}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_AUTH_REDIRECT_URL: ${GOOGLE_AUTH_REDIRECT_URL}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
     ports:
       - 1426:1426
       - 1427:1427
@@ -70,26 +85,41 @@ services:
       - ./thirdeye/thirdeye-dashboard/config/persistence.yml:/opt/thirdeye/config/default/persistence.yml
       - ./thirdeye/thirdeye-dashboard/config/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
       - ./thirdeye/thirdeye-dashboard/config/detector.yml:/opt/thirdeye/config/default/detector.yml
+      - ./thirdeye/configs/others/jmx_config.yml:/opt/thirdeye/config/default/jmx_config.yml
+      - ./dockerconf/entrypoint_dev.sh:/opt/thirdeye/bin/entrypoint_dev.sh
+      - ./thirdeye/thirdeye-dashboard/config/rca.yml:/opt/thirdeye/config/default/rca.yml
+      - ./thirdeye/thirdeye-dashboard/config/dashboard.yml:/opt/thirdeye/config/default/dashboard.yml
+      # - ./thirdeye/thirdeye-frontend/config/environment.js:/opt/thirdeye/thirdeye-frontend/config/default/environment.js
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/persistence.yml.tmpl:/opt/thirdeye/config/default/persistence.yml.tmpl
       #- ./thirdeye/thirdeye-pinot/config-templates/cloud/data-sources/data-sources-config.yml.tmpl:/opt/thirdeye/config/default/data-sources/data-sources-config.yml.tmpl
-      - ./thirdeye/configs/jmx_config.yml:/opt/thirdeye/config/default/jmx_config.yml
-        #- ./thirdeye/thirdeye-pinot/config-templates/dev/persistence.yml:/opt/thirdeye/config/default/persistence.yml
-        #- ./thirdeye/thirdeye-pinot/config-templates/dev/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
-      - ./dockerconf/entrypoint_dev.sh:/opt/thirdeye/bin/entrypoint_dev.sh
       #- ./dockerconf/entrypoint.sh:/opt/thirdeye/bin/entrypoint.sh
+      #- ./thirdeye/thirdeye-pinot/config-templates/dev/persistence.yml:/opt/thirdeye/config/default/persistence.yml
+      #- ./thirdeye/thirdeye-pinot/config-templates/dev/data-sources/data-sources-config.yml:/opt/thirdeye/config/default/data-sources/data-sources-config.yml
     ports:
       - 8081:8080
     environment:
       CONFIG_DIR: /opt/thirdeye/config/default
-      MYSQL_HOSTNAME: thirdeye_mysql
-      MYSQL_PORT: 3306
-      THIRDEYE_DATABASE: thirdeye
-      MYSQL_PASSWORD: root
-      DRUID_USER: admin
-      DRUID_PWD: admin
+      FE_CONFIG_DIR: /opt/thirdeye/thirdeye-frontend/config/default
+      MYSQL_HOSTNAME: ${MYSQL_HOSTNAME}
+      MYSQL_PORT: ${MYSQL_PORT}
+      THIRDEYE_DATABASE: ${THIRDEYE_DATABASE}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      DRUID_URL: ${DRUID_URL}
+      DRUID_USERNAME: ${DRUID_USERNAME}
+      DRUID_PASSWORD: ${DRUID_PASSWORD}
+      # postgres configs are for local deployment
+      POSTGRES_HOSTNAME: ${POSTGRES_HOSTNAME}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      THIRDEYE_POSTGRES_DATABASE: ${THIRDEYE_POSTGRES_DATABASE}
+      THIRDEYE_POSTGRES_USER: ${THIRDEYE_POSTGRES_USER}
+      THIRDEYE_POSTGRES_PASSWORD: ${THIRDEYE_POSTGRES_PASSWORD}
       APP_MODE: prod
       JMX_CONFIG: "-Xms1G -Xmx3G"
       SLACK_TOKEN: ${SLACK_TOKEN}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_AUTH_REDIRECT_URL: ${GOOGLE_AUTH_REDIRECT_URL}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
     entrypoint: ["/bin/sh", "/opt/thirdeye/bin/entrypoint_dev.sh", "backend"]
     #entrypoint: ["/bin/sh", "/opt/thirdeye/bin/entrypoint.sh", "backend"]
     depends_on:

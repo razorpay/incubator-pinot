@@ -5,12 +5,18 @@ dataSourceConfigs:
     properties:
       MySQL:
         - db:
-            mysql: jdbc:mysql://127.0.0.1:23306/te_metrics?allowPublicKeyRetrieval=true&useSSL=false
-          user: root
-          password: root
+            mysql: jdbc:mysql://?$MYSQL_HOSTNAME:?$MYSQL_PORT/?$THIRDEYE_DATABASE?allowPublicKeyRetrieval=true&
+          user: ?$MYSQL_USERNAME
+          password: ?$MYSQL_PASSWORD
           driver: com.mysql.cj.jdbc.Driver
-      PostgreSQL:
+      # PostgreSQL is for local deployment
+      # PostgreSQL:
+      #   - db:
+      #       postgres: jdbc:postgresql://?$POSTGRES_HOSTNAME:?$POSTGRES_PORT/?$THIRDEYE_POSTGRES_DATABASE
+      #     user: ?$THIRDEYE_POSTGRES_USER
+      #     password: ?$THIRDEYE_POSTGRES_PASSWORD
+      Druid:
         - db:
-            postgres: jdbc:postgresql://127.0.0.1:5432/thirdeye
-          user: root
-          password: root
+            druid: jdbc:avatica:remote:url=?$DRUID_URL
+          user: ?$DRUID_USERNAME
+          password: ?$DRUID_PASSWORD

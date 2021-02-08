@@ -1,26 +1,25 @@
 /* eslint-env node */
-'use strict';
-
-module.exports = function(environment) {
-
+"use strict";
+module.exports = function (environment) {
+  const DEP_MODE = process.env.DEP_MODE;
   let ENV = {
+    appName: "ThirdEye",
 
-    appName: 'ThirdEye',
-
-    modulePrefix: 'thirdeye-frontend',
+    modulePrefix: "thirdeye-frontend",
 
     environment,
 
-    podModulePrefix: 'thirdeye-frontend/pods',
+    podModulePrefix: "thirdeye-frontend/pods",
 
-    email: 'thirdeye@thirdeye.com',
+    email: "thirdeye@thirdeye.com",
 
-    devEmail: 'thirdeye@thirdeye.com',
+    devEmail: "thirdeye@thirdeye.com",
 
-    rootURL: '/app/',
+    rootURL: "/app/",
 
-    locationType: 'hash', 'ember-cli-mirage': {
-      directory: 'app/mirage'
+    locationType: "hash",
+    "ember-cli-mirage": {
+      directory: "app/mirage",
     },
 
     https_only: false,
@@ -29,30 +28,42 @@ module.exports = function(environment) {
     timeZone: "Asia/Calcutta",
 
     moment: {
-      includeTimezone: 'all'
+      includeTimezone: "all",
     },
 
     piwik: {
       sid: 123,
-      url: 'https://your-piwik.endpoint.com'
+      url: "https://your-piwik.endpoint.com",
     },
 
-    'ember-d3': {
-      bundle: true
+    "ember-d3": {
+      bundle: true,
     },
 
     docs: {
       createAlert: "/link/to/create/alert/wiki",
       detectionConfig: "/link/to/DetectionConfiguration/wiki",
       subscriptionConfig: "/link/to/NotificationConfiguration/wiki",
-      cubeWiki: "/link/to/cubeAlgorithm/wiki"
+      cubeWiki: "/link/to/cubeAlgorithm/wiki",
     },
 
-    // used to split username if needed.  
-    userNameSplitToken: ' ',
+    torii: {
+      sessionServiceName: "session",
+      allowUnsafeRedirect: true,
+      providers: {
+        "google-oauth2": {
+          apiKey:
+            "google-apikey",
+          redirectUri: "thirdeye-redirecturl",
+          scope: "email profile"
+        },
+      },
+    },
+
+    // used to split username if needed.
+    userNameSplitToken: " ",
 
     EmberENV: {
-
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
         // e.g. 'with-controller': true
@@ -60,24 +71,34 @@ module.exports = function(environment) {
 
       EXTEND_PROTOTYPES: {
         // Prevent Ember Data from overriding Date.parse.
-        Date: false
-      }
+        Date: false,
+      },
     },
 
-    'ember-simple-auth':  {
-      baseURL: '/app/#/rca'
+    "ember-simple-auth": {
+      baseURL: "/app/#/rca",
     },
 
     APP: {
       // you can pass flags/options to your application instance
       // when it is created
-    }
+    },
   };
 
-  if (environment === 'development') {
-    ENV.rootURL = '/';
-    ENV['ember-simple-auth'] = {
-      baseURL: '/#/rca'
+  if (DEP_MODE === "prod"){
+    ENV.torii.providers["google-oauth2"].apiKey="1007721360592-7e4kc7ohjtrtqb24hecstad3bcqbolnn.apps.googleusercontent.com";
+    ENV.torii.providers["google-oauth2"].redirectUri="https://thirdeye.razorpay.com";
+  }
+
+  if (DEP_MODE === "stage"){
+    ENV.torii.providers["google-oauth2"].apiKey="391316638671-qbubq6ip7icqovomv38fpdh4jkbm2c93.apps.googleusercontent.com";
+    ENV.torii.providers["google-oauth2"].redirectUri="https://thirdeye.concierge.stage.razorpay.in";
+  }
+
+  if (environment === "development") {
+    ENV.rootURL = "/";
+    ENV["ember-simple-auth"] = {
+      baseURL: "/#/rca",
     };
     // necessary for local development
     // ENV.APP.LOG_ACTIVE_GENERATION = true;
@@ -86,26 +107,27 @@ module.exports = function(environment) {
     // ENV.APP.LOG_VIEW_LOOKUPS = true;
   }
 
-  if (environment === 'test') {
-    ENV.rootURL = '/';
+  if (environment === "test") {
+    ENV.rootURL = "/";
 
     // Testem prefers this...
-    ENV.locationType = 'none';
+    ENV.locationType = "none";
     ENV.APP.autoboot = false;
 
     // keep test console output quieter
     ENV.APP.LOG_ACTIVE_GENERATION = false;
     ENV.APP.LOG_VIEW_LOOKUPS = false;
 
-    ENV.APP.rootElement = '#ember-testing';
-    ENV['ember-cli-mirage'] = {
-      directory: 'app/mirage',
+    ENV.APP.rootElement = "#ember-testing";
+    ENV["ember-cli-mirage"] = {
+      directory: "app/mirage",
       autostart: true,
-      enabled: true
+      enabled: true,
     };
   }
 
-  if (environment === 'production') {}
+  if (environment === "production") {
+  }
 
   return ENV;
 };

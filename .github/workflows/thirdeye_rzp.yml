@@ -39,15 +39,24 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Install Base Packages
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends vim wget curl git automake bison flex g++ libboost-all-dev libevent-dev libssl-dev libtool make pkg-config nodejs 
-      - name: Build Thirdeye
-        #run: cd thirdeye && mvn -DskipTests -T 1C clean compile package && cd .. || exit 1
-        run: cd thirdeye && ./install.sh && cd ..|| exit 1
-      - name: Docker Push Dockerhub
+      - name: Building Thirdeye Stage
+        run: cd thirdeye && ./install.sh stage && cd ..|| exit 1
+      - name: Stage Docker Push Dockerhub
         uses: docker/build-push-action@v1
         with:
           dockerfile: docker/images/pinot-thirdeye/Dockerfile.java14
           repository: razorpay/thirdeye
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          tags: ${{ github.sha }}
+          tags: stage-${{ github.sha }}
+      - name: Building Thirdeye Prod
+        run: cd thirdeye && ./install.sh prod && cd ..|| exit 1
+      - name: Prod Docker Push Dockerhub
+        uses: docker/build-push-action@v1
+        with:
+          dockerfile: docker/images/pinot-thirdeye/Dockerfile.java14
+          repository: razorpay/thirdeye
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          tags: prod-${{ github.sha }}
 

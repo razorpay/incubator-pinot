@@ -41,4 +41,4 @@ echo "*******************************************************"
 echo "Building ThirdEye"
 echo "*******************************************************"
 
-mvn install -DskipTests ${PROFILES_ARG}|| exit 1
+mvn install -DskipTests -DTHIRDEYE_ENV=$1 ${PROFILES_ARG}|| exit 1

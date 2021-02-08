@@ -1,6 +1,7 @@
 /* eslint-env node */
 "use strict";
 module.exports = function (environment) {
+  const DEP_MODE = process.env.DEP_MODE;
   let ENV = {
     appName: "ThirdEye",
 
@@ -52,8 +53,8 @@ module.exports = function (environment) {
       providers: {
         "google-oauth2": {
           apiKey:
-            "1007721360592-7e4kc7ohjtrtqb24hecstad3bcqbolnn.apps.googleusercontent.com",
-          redirectUri: "https://thirdeye.razorpay.com",
+            "google-apikey",
+          redirectUri: "thirdeye-redirect-url",
           scope: "email profile",
         },
       },
@@ -83,6 +84,16 @@ module.exports = function (environment) {
       // when it is created
     },
   };
+
+  if (DEP_MODE === "prod"){
+    ENV.torii.providers["google-oauth2"].apiKey="1007721360592-7e4kc7ohjtrtqb24hecstad3bcqbolnn.apps.googleusercontent.com";
+    ENV.torii.providers["google-oauth2"].redirectUri="https://thirdeye.razorpay.com";
+  }
+
+  if (DEP_MODE === "stage"){
+    ENV.torii.providers["google-oauth2"].apiKey="391316638671-qbubq6ip7icqovomv38fpdh4jkbm2c93.apps.googleusercontent.com";
+    ENV.torii.providers["google-oauth2"].redirectUri="https://thirdeye.concierge.stage.razorpay.in";
+  }
 
   if (environment === "development") {
     ENV.rootURL = "/";

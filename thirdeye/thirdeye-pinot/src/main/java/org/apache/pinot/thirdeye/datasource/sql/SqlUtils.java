@@ -351,6 +351,11 @@ public class SqlUtils {
 
     // epoch case
     if (TimeSpec.SINCE_EPOCH_FORMAT.equals(timeFormat)) {
+      if (sourceName.equals(POSTGRESQL)) {
+        long startTime = (long) Math.ceil(start.getMillis()) / 1000;
+        long endTime = (long) Math.ceil(endExclusive.getMillis()) / 1000;
+        return String.format("%s BETWEEN %d AND %d", getToUnixTimeClause(timeFormat, timeField, sourceName), startTime, endTime);
+      }
       long startUnits = (long) Math.ceil(start.getMillis() / (double) dataGranularityMillis);
       long endUnits = (long) Math.ceil(endExclusive.getMillis() / (double) dataGranularityMillis);
 

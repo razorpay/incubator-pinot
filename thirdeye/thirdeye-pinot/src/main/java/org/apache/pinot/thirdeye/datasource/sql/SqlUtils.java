@@ -694,7 +694,8 @@ public class SqlUtils {
     } else if (sourceName.equals(MYSQL)) {
       return "UNIX_TIMESTAMP(STR_TO_DATE(CAST(" + timeColumn + " AS CHAR), '" + timeFormatToMySQLFormat(timeFormat) + "'))";
     } else if (sourceName.equals(POSTGRESQL)) {
-      return "EXTRACT(EPOCH FROM to_timestamp(" + timeColumn + ", '" + timeFormatToPostgreSQLFormat(timeFormat) + "'))";
+      return timeColumn;
+      //return "EXTRACT(EPOCH FROM to_timestamp(" + timeColumn + ", '" + timeFormatToPostgreSQLFormat(timeFormat) + "'))";
     } else if (sourceName.equals(DRUID)) {
       //return "TIME_EXTRACT(" + timeColumn + ", '" + timeFormatToDruidFormat(timeFormat) + "') ";
       return timeColumn;

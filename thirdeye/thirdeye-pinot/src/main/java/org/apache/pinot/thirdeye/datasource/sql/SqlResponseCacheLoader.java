@@ -221,6 +221,12 @@ public class SqlResponseCacheLoader extends CacheLoader<SqlQuery, ThirdEyeResult
 					dataSource.setRemoveAbandonedTimeout(ABANDONED_TIMEOUT);
 					dataSource.setRemoveAbandoned(true);
 
+					//From StackOverflow: https://stackoverflow.com/questions/29620265/postgres-connection-has-been-closed-error-in-spring-boot
+					dataSource.setTestOnBorrow(true);
+					dataSource.setTestWhileIdle(true);
+					dataSource.setTestOnReturn(true);
+					dataSource.setValidationQuery("SELECT 1");
+
 					postgresqlDBNameToDataSourceMap.put(entry.getKey(), dataSource);
 					postgresqlDBNameToURLMap.putAll(dbNameToURLMap);
 				}

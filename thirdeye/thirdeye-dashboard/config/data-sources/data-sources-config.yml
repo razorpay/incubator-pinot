@@ -10,11 +10,11 @@ dataSourceConfigs:
           password: ?$MYSQL_PASSWORD
           driver: com.mysql.cj.jdbc.Driver
       # PostgreSQL is for local deployment
-      # PostgreSQL:
-      #   - db:
-      #       postgres: jdbc:postgresql://?$POSTGRES_HOSTNAME:?$POSTGRES_PORT/?$THIRDEYE_POSTGRES_DATABASE
-      #     user: ?$THIRDEYE_POSTGRES_USER
-      #     password: ?$THIRDEYE_POSTGRES_PASSWORD
+      PostgreSQL:
+        - db:
+            postgres: jdbc:postgresql://timescaledb-de.razorpay.com:9090/realtime
+          user: thirdeye
+          password: ?$TIMESCALEDB_PASSWORD
       Druid:
         - db:
             druid: jdbc:avatica:remote:url=?$DRUID_URL

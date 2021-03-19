@@ -351,6 +351,13 @@ public class SqlUtils {
 
     // epoch case
     if (TimeSpec.SINCE_EPOCH_FORMAT.equals(timeFormat)) {
+      if (sourceName.equals(POSTGRESQL)) {
+        // long startTime = (long) Math.ceil(start.getMillis()) / 1000;
+        // long endTime = (long) Math.ceil(endExclusive.getMillis()) / 1000;
+        // return String.format("%s BETWEEN %d AND %d", getToUnixTimeClause(timeFormat, timeField, sourceName), startTime, endTime);
+        // Taking dataGranularity as SECONDS for datasetconfig to work
+        dataGranularityMillis = 1000;
+      }
       long startUnits = (long) Math.ceil(start.getMillis() / (double) dataGranularityMillis);
       long endUnits = (long) Math.ceil(endExclusive.getMillis() / (double) dataGranularityMillis);
 
@@ -694,7 +701,8 @@ public class SqlUtils {
     } else if (sourceName.equals(MYSQL)) {
       return "UNIX_TIMESTAMP(STR_TO_DATE(CAST(" + timeColumn + " AS CHAR), '" + timeFormatToMySQLFormat(timeFormat) + "'))";
     } else if (sourceName.equals(POSTGRESQL)) {
-      return "EXTRACT(EPOCH FROM to_timestamp(" + timeColumn + ", '" + timeFormatToPostgreSQLFormat(timeFormat) + "'))";
+      return timeColumn;
+      //return "EXTRACT(EPOCH FROM to_timestamp(" + timeColumn + ", '" + timeFormatToPostgreSQLFormat(timeFormat) + "'))";
     } else if (sourceName.equals(DRUID)) {
       //return "TIME_EXTRACT(" + timeColumn + ", '" + timeFormatToDruidFormat(timeFormat) + "') ";
       return timeColumn;

@@ -27,6 +27,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pinot.thirdeye.auto.onboard.AutoOnboardPinotMetadataSource;
 import org.apache.pinot.thirdeye.datasource.MetadataSourceConfig;
+import org.apache.pinot.thirdeye.util.CustomConfigReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -212,10 +213,14 @@ public class PinotThirdEyeDataSourceConfig {
           "{} accepts only 'http' or 'https' connection schemes", className);
 
       PinotThirdEyeDataSourceConfig config = new PinotThirdEyeDataSourceConfig();
-      config.setControllerHost(controllerHost);
+    
+   // Read from Custom config Reader for reading from environment variables
+      CustomConfigReader ccr = new CustomConfigReader();
+      
+      config.setControllerHost(ccr.readEnv(controllerHost));
       config.setControllerPort(controllerPort);
-      config.setZookeeperUrl(zookeeperUrl);
-      config.setClusterName(clusterName);
+      config.setZookeeperUrl(ccr.readEnv(zookeeperUrl));
+      config.setClusterName(ccr.readEnv(clusterName));
       config.setBrokerUrl(brokerUrl);
       config.setTag(tag);
       config.setControllerConnectionScheme(controllerConnectionScheme);
@@ -255,6 +260,7 @@ public class PinotThirdEyeDataSourceConfig {
     ImmutableMap<String, Object> processedProperties = processPropertyMap(properties);
     Preconditions.checkNotNull(processedProperties, "Invalid properties for data source: %s, properties=%s", dataSourceName, properties);
 
+    
     String controllerHost = MapUtils.getString(processedProperties, PinotThirdeyeDataSourceProperties.CONTROLLER_HOST.getValue());
     int controllerPort = MapUtils.getInteger(processedProperties, PinotThirdeyeDataSourceProperties.CONTROLLER_PORT.getValue());
     String controllerConnectionScheme = MapUtils.getString(processedProperties, PinotThirdeyeDataSourceProperties.CONTROLLER_CONNECTION_SCHEME.getValue());
@@ -265,7 +271,6 @@ public class PinotThirdEyeDataSourceConfig {
     String brokerUrl = MapUtils.getString(processedProperties, PinotThirdeyeDataSourceProperties.BROKER_URL.getValue());
     String tag = MapUtils.getString(processedProperties, PinotThirdeyeDataSourceProperties.TAG.getValue());
     String name = MapUtils.getString(processedProperties, PinotThirdeyeDataSourceProperties.NAME.getValue());
-
     Builder builder =
         PinotThirdEyeDataSourceConfig.builder().setControllerHost(controllerHost).setControllerPort(controllerPort)
             .setZookeeperUrl(zookeeperUrl).setClusterName(clusterName);

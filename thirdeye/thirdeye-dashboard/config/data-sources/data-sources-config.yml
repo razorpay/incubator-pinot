@@ -1,6 +1,16 @@
 
 # Please put the mock data source as the first in this configuration.
 dataSourceConfigs:
+  - className: org.apache.pinot.thirdeye.datasource.pinot.PinotThirdEyeDataSource
+    properties:
+      zookeeperUrl: '?$PINOT_ZOOKEEPER_HOST'
+      clusterName: '?$PINOT_CLUSTER_NAME'
+      controllerConnectionScheme: 'https'
+      controllerHost: '?$PINOT_CONTROLLER_HOST'
+      controllerPort: 443
+      cacheLoaderClassName: org.apache.pinot.thirdeye.datasource.pinot.PinotControllerResponseCacheLoader
+    metadataSourceConfigs:
+      - className: org.apache.pinot.thirdeye.auto.onboard.AutoOnboardPinotMetadataSource
   - className: org.apache.pinot.thirdeye.datasource.sql.SqlThirdEyeDataSource
     properties:
       MySQL:

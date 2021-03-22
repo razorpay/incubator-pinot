@@ -120,7 +120,7 @@ public class PqlUtils {
     String groupByClause = getDimensionGroupByClause(groupBy, timeGranularity, dataTimeSpec);
     if (StringUtils.isNotBlank(groupByClause)) {
       sb.append(" ").append(groupByClause);
-      sb.append(" TOP ").append(limit);
+      sb.append(" LIMIT ").append(limit);
     }
 
     return sb.toString();
@@ -214,7 +214,7 @@ public class PqlUtils {
     String groupByClause = getDimensionGroupByClause(groupBy, timeGranularity, dataTimeSpec);
     if (StringUtils.isNotBlank(groupByClause)) {
       sb.append(" ").append(groupByClause);
-      sb.append(" TOP ").append(limit);
+      sb.append(" LIMIT ").append(limit);
     }
 
     return sb.toString();

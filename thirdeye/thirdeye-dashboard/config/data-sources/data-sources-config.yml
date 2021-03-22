@@ -3,7 +3,7 @@
 dataSourceConfigs:
   - className: org.apache.pinot.thirdeye.datasource.pinot.PinotThirdEyeDataSource
     properties:
-      zookeeperUrl: 'apache-pinot-zookeeper-bitnami-headless.pinot.svc.cluster.local:2181/pinot-stage'
+      zookeeperUrl: 'apache-pinot-zookeeper-bitnami-headless.pinot.svc.cluster.local:2181'
       clusterName: 'pinot-stage'
       controllerConnectionScheme: 'https'
       controllerHost: 'pinot-controller.int.stage.razorpay.in'

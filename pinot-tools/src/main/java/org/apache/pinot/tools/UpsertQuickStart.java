@@ -90,7 +90,7 @@ public class UpsertQuickStart {
         ZkStarter.stopLocalZkServer(zookeeperInstance);
         FileUtils.deleteDirectory(quickstartTmpDir);
       } catch (Exception e) {
-        e.printStackTrace();
+        
       }
     }));
     printStatus(Color.CYAN, "***** Bootstrap meetupRSVP(upsert) table *****");

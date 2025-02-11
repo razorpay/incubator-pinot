@@ -53,14 +53,14 @@ public class FixedByteMVMutableForwardIndexTest {
       testIntArray(seed);
       testWithZeroSize(seed);
     } catch (Throwable e) {
-      e.printStackTrace();
+      
       Assert.fail("Failed with seed " + seed);
     }
     for (int mvs = 10; mvs < 1000; mvs += 10) {
       try {
         testIntArrayFixedSize(mvs, seed);
       } catch (Throwable e) {
-        e.printStackTrace();
+        
         Assert.fail("Failed with seed " + seed + ", mvs " + mvs);
       }
     }

@@ -126,7 +126,7 @@ public class HybridQuickstart {
         ZkStarter.stopLocalZkServer(_zookeeperInstance);
         FileUtils.deleteDirectory(quickstartTmpDir);
       } catch (Exception e) {
-        e.printStackTrace();
+        
       }
     }));
     printStatus(Color.YELLOW, "***** Bootstrap airlineStats offline and realtime table *****");

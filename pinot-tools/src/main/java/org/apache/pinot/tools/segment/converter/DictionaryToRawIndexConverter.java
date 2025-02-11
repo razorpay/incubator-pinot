@@ -175,7 +175,7 @@ public class DictionaryToRawIndexConverter {
             convertSegment(segmentDir, _columns.split("\\s*,\\s*"), outDir, _compressOutput);
           } catch (Exception e) {
             LOGGER.error("Exception caught while converting segment {}", segmentDir.getName(), e);
-            e.printStackTrace();
+            
           }
         }
       });

@@ -148,7 +148,7 @@ public class StreamAvroIntoKafkaCommand extends AbstractBaseAdminCommand impleme
 
       reader.close();
     } catch (Exception e) {
-      e.printStackTrace();
+      
       throw new RuntimeException(e);
     }
 

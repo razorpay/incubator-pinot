@@ -56,7 +56,7 @@ public class FixedByteSVMutableForwardIndexTest {
       try {
         testDictId(r, rows, div);
       } catch (Throwable t) {
-        t.printStackTrace();
+        
         Assert.fail("Failed with seed " + seed);
       }
     }

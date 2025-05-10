@@ -168,7 +168,7 @@ public class Quickstart {
         runner.stop();
         FileUtils.deleteDirectory(quickstartTmpDir);
       } catch (Exception e) {
-        e.printStackTrace();
+        
       }
     }));
     printStatus(Color.CYAN, "***** Bootstrap baseballStats table *****");

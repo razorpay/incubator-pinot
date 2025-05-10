@@ -412,7 +412,7 @@ public abstract class BaseClusterIntegrationTestSet extends BaseClusterIntegrati
         try {
           testSqlQuery(sqlQuery, sqlQueries);
         } catch (Exception e) {
-          e.printStackTrace();
+          
           LOGGER.error("Failed to test SQL query: {} with H2 queries: {}.", sqlQuery, sqlQueries, e);
           throw e;
         }

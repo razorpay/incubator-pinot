@@ -408,7 +408,7 @@ public class HybridClusterIntegrationTestCommandLineRunner {
                   } catch (Exception e) {
                     numFailedQueries.getAndIncrement();
                     System.out.println("Caught exception while comparing query: " + currentQuery);
-                    e.printStackTrace();
+                    
                   }
                 }
               });

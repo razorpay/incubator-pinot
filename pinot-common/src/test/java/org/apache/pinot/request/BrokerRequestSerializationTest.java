@@ -127,7 +127,7 @@ public class BrokerRequestSerializationTest {
 //        //System.out.println(s3.length);
 //        //break;
 //      } catch (TException e) {
-//        e.printStackTrace();
+//        
 //      }
 //    }
 //    t.stop();
@@ -267,7 +267,7 @@ public class BrokerRequestSerializationTest {
 //        //System.out.println(s3.length);
 //        //break;
 //      } catch (TException e) {
-//        e.printStackTrace();
+//        
 //      }
 //    }
 //    t.stop();

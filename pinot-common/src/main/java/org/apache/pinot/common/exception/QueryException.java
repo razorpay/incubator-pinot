@@ -142,7 +142,7 @@ public class QueryException {
 
   public static String getTruncatedStackTrace(Exception exception) {
     StringWriter stringWriter = new StringWriter();
-    exception.printStackTrace(new PrintWriter(stringWriter));
+    
     String fullStackTrace = stringWriter.toString();
     String[] lines = fullStackTrace.split("\n");
     int numLinesOfStackTrace = Math.min(lines.length, _maxLinesOfStackTrace);

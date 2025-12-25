@@ -98,7 +98,7 @@ public class PinotThroughput {
               totalResponseTime.getAndAdd(responseTime);
             }
           } catch (IOException e) {
-            e.printStackTrace();
+            
           }
         }
       });

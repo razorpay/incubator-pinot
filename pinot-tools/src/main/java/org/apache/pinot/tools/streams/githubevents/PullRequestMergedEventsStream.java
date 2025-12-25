@@ -113,7 +113,7 @@ public class PullRequestMergedEventsStream {
       try {
         shutdown();
       } catch (Exception e) {
-        e.printStackTrace();
+        
       }
     }));
   }
